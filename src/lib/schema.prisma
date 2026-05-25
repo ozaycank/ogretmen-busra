@@ -1,0 +1,88 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ContentStatus {
+  PENDING   // Ziyaretçi yüklemeleri onay bekler (Bot/Spam filtresi)
+  APPROVED  // Sitede listelenen aktif içerikler
+  REJECTED  // Reddedilen içerikler
+}
+
+enum GradeLevel {
+  OKUL_ONCESI
+  SINIF_1
+  SINIF_2
+  SINIF_3
+  SINIF_4
+  GENEL
+}
+
+enum ContentCategory {
+  ETKINLIK
+  ODEV
+  KONU_ANLATIMI
+  KODLAMA
+  BELIRLI_GUN_VE_HAFTALAR
+  UZMAN_NOTLARI
+  SINIF_MATERYALLERI
+  PIKTES_TURKCE
+  DEGERLER_EGITIMI
+  INTERAKTIF_OYUN
+}
+
+model Material {
+  id            String          @id @default(uuid())
+  title         String          @db.VarChar(150) // DB şişirme saldırılarına karşı katı sınır
+  description   String?         @db.VarChar(500)
+  fileUrl       String          @db.Text         // R2 / S3 dosya adresi
+  fileType      String          @db.VarChar(10)  // pdf, docx, jpeg kontrolü için
+  fileSize      Int                              // Byte cinsinden dosya boyutu kontrolü
+  authorName    String          @db.VarChar(100) // "Büşra Öğretmen" veya Ziyaretçi Ad-Soyad
+  status        ContentStatus   @default(PENDING)
+  grade         GradeLevel
+  category      ContentCategory
+  
+  // Metrikler
+  downloadCount Int             @default(0)
+  viewCount     Int             @default(0)
+  
+  // Güvenlik ve Bot Koruma Katmanı
+  ipHash        String          @db.VarChar(64)  // Spam atan IP'leri (hashing ile anonim) engellemek için
+  turnstileToken String         @unique          // Cloudflare Turnstile doğrulama token izi
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Performans için Kompoze İndeksler (Sınıf ve kategori filtreleme hızını maksimize eder)
+  @@index([status, grade, category])
+  @@index([ipHash, createdAt]) // IP bazlı dakikalık yükleme limiti (Rate-limiting) kontrolü sorguları için
+}
+
+// Görsel 1: Eğitim Haberleri Modülü
+model News {
+  id          String   @id @default(uuid())
+  title       String   @db.VarChar(200)
+  content     String   @db.Text
+  imageUrl    String?  @db.Text
+  label       String   @db.VarChar(50) // MAAŞ, ATAMA, GÜNDEM, MEB
+  viewCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+// Görsel 3: Alt Kısımdaki Canlı/Toplam İstatistik Sayaçları
+model SiteStats {
+  id        String   @id @default(uuid())
+  date      DateTime @unique @default(now()) @db.Date
+  online    Int      @default(0)
+  today     Int      @default(0)
+  yesterday Int      @default(0)
+  total     Int      @default(0)
+}
