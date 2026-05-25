@@ -33,6 +33,11 @@ enum ContentCategory {
   DEGERLER_EGITIMI
   INTERAKTIF_OYUN
 }
+enum Role {
+  ADMIN
+  MODERATOR
+  USER
+}
 
 model Material {
   id            String          @id @default(uuid())
@@ -84,4 +89,45 @@ model SiteStats {
   today     Int      @default(0)
   yesterday Int      @default(0)
   total     Int      @default(0)
+}
+
+model User {
+  id                  String     @id @default(uuid())
+  email               String     @unique @db.VarChar(255)
+  passwordHash        String     @db.VarChar(255)
+  name                String     @db.VarChar(100)
+  role                Role       @default(USER)
+  
+  // Güvenlik & Brute-Force Koruması
+  failedLoginAttempts Int        @default(0)
+  lockedUntil         DateTime?
+  
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  auditLogs           AuditLog[]
+
+  @@index([email])
+}
+
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  ACCOUNT_LOCKED
+  MATERIAL_APPROVED
+  MATERIAL_DELETED
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  userId    String?     // Anonim başarısız denemeler için null olabilir
+  action    AuditAction
+  ipAddress String?     @db.VarChar(64)
+  userAgent String?     @db.Text
+  details   String?     @db.Text
+  createdAt DateTime    @default(now())
+
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, action, createdAt])
 }

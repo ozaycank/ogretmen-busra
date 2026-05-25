@@ -2,35 +2,35 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./config/auth.config";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
-// import { prisma } from "@/lib/prisma"; // Gerçek DB bağlantısı
+import { AuthService } from "./services/auth.services";
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
-    session: { strategy: "jwt" },
+    session: { strategy: "jwt", maxAge: 24 * 60 * 60 }, // 1 gün
     providers: [
         Credentials({
-            async authorize(credentials) {
-                const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
+            async authorize(credentials, req) {
+                const parsed = z
+                    .object({ email: z.string().email(), password: z.string().min(8) })
                     .safeParse(credentials);
 
-                if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
+                if (!parsed.success) return null;
 
-                    /* GERÇEK VERİTABANI KONTROLÜ
-                    const user = await prisma.user.findUnique({ where: { email } });
+                const ip = req.headers?.get("x-forwarded-for") || "unknown";
+
+                try {
+                    const user = await AuthService.verifyCredentials(
+                        parsed.data.email,
+                        parsed.data.password,
+                        ip
+                    );
+
                     if (!user) return null;
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return user;
-                    */
-
-                    // Hardcoded Admin (Sadece MVP aşaması için)
-                    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-                        return { id: "1", name: "Büşra Öğretmen", email, role: "ADMIN" };
-                    }
+                    return { id: user.id, email: user.email, name: user.name, role: user.role };
+                } catch (error: any) {
+                    // Güvenlik: Spesifik hata mesajını UI'a yansıt (örn: Kilitli hesap)
+                    throw new Error(error.message);
                 }
-                return null;
             },
         }),
     ],

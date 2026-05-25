@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { Role } from "@prisma/client"; // Tip dönüşümü için Prisma'dan Role enum'ını ekledik
 
 export const authConfig = {
     pages: {
@@ -9,27 +10,25 @@ export const authConfig = {
             const isLoggedIn = !!auth?.user;
             const isOnAdmin = nextUrl.pathname.startsWith("/admin");
 
-            // Admin sayfalarına sadece giriş yapmış kullanıcılar erişebilir
-            if (isOnAdmin) {
-                if (isLoggedIn) return true;
-                return false; // Giriş sayfasına yönlendir (Redirect)
-            }
+            if (isOnAdmin) return isLoggedIn;
             return true;
         },
         jwt({ token, user }) {
+            // User nesnesi sadece ilk girişte (login) gelir
             if (user) {
                 token.id = user.id;
-                token.role = (user as any).role;
+                token.role = user.role;
             }
             return token;
         },
         session({ session, token }) {
-            if (session.user) {
+            if (token && session.user) {
+                // 'unknown' tipinden beklenen tiplere açıkça (explicit) cast ediyoruz
                 session.user.id = token.id as string;
-                (session.user as any).role = token.role;
+                session.user.role = token.role as Role;
             }
             return session;
         },
     },
-    providers: [], // provider'lar auth.ts'de eklenecek (Bcrypt çakışmasını önlemek için)
+    providers: [],
 } satisfies NextAuthConfig;
