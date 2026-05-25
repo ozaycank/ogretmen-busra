@@ -1,21 +1,22 @@
 import { PrismaClient } from "@prisma/client";
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 
-// Veritabanı bağlantı havuzunu (Pool) yerel sürücü ile oluşturuyoruz
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-// Prisma için adaptörü tanımlıyoruz
-const adapter = new PrismaPg(pool);
-
-// Global objeye PrismaClient'ı ekliyoruz (Sadece development ortamı için)
-const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined;
+const prismaClientSingleton = () => {
+    return new PrismaClient({
+        // Vercel deployment best practices: log errors in prod, add query/warn in dev
+        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    });
 };
 
-// Prisma 7 standardı: Client'ı başlatırken adaptörü içeri aktarıyoruz
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+// Ensure no TypeScript errors by extracting the exact return type
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+const globalForPrisma = globalThis as unknown as {
+    prisma: PrismaClientSingleton | undefined;
+};
+
+// Prevent multiple instances of Prisma Client in development (Next.js HMR)
+export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = prisma;
+}

@@ -1,93 +1,87 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { uploadToR2 } from "@/lib/r2";
-import crypto from "crypto";
+import { NextRequest } from "next/server";
+import { MaterialService } from "@/services/material.service";
+import { createMaterialSchema, getMaterialsQuerySchema } from "@/lib/validations/material.schema";
+import { successResponse } from "@/lib/api-response";
+import { withErrorHandler } from "@/lib/api-wrapper";
 
-// Next.js App Router'da Route Segment Config
 export const runtime = "nodejs";
 
-export async function POST(req: Request) {
-    try {
-        const formData = await req.formData();
+// GET: Fetch paginated materials
+export const GET = withErrorHandler(async (req: NextRequest) => {
+    const { searchParams } = req.nextUrl;
 
-        // 1. Form Verilerini Çıkarma
-        const title = formData.get("title") as string;
-        const description = formData.get("description") as string;
-        const authorName = formData.get("authorName") as string;
-        const grade = formData.get("grade") as string;
-        const category = formData.get("category") as string;
-        const turnstileToken = formData.get("turnstileToken") as string;
-        const file = formData.get("file") as File;
+    const query = getMaterialsQuerySchema.parse({
+        page: searchParams.get("page") || undefined,
+        limit: searchParams.get("limit") || undefined,
+        grade: searchParams.get("grade") || undefined,
+        category: searchParams.get("category") || undefined,
+        search: searchParams.get("search") || undefined,
+    });
 
-        if (!title || !authorName || !grade || !category || !turnstileToken || !file) {
-            return NextResponse.json({ error: "Eksik bilgi gönderildi." }, { status: 400 });
+    const result = await MaterialService.getMaterials(query);
+
+    return successResponse(
+        result.items,
+        "Materials fetched successfully",
+        {
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            totalPages: result.totalPages,
         }
+    );
+});
 
-        // 2. Cloudflare Turnstile Bot Doğrulaması
-        const verifyEndpoint = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-        const turnstileRes = await fetch(verifyEndpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: `secret=${process.env.TURNSTILE_SECRET_KEY}&response=${turnstileToken}`,
-        });
-        const turnstileData = await turnstileRes.json();
+// POST: Upload a new material
+export const POST = withErrorHandler(async (req: NextRequest) => {
+    const formData = await req.formData();
 
-        if (!turnstileData.success) {
-            return NextResponse.json({ error: "Bot doğrulaması başarısız oldu." }, { status: 403 });
-        }
+    // 1. Zod Validation for primitive text fields
+    const rawData = {
+        title: formData.get("title"),
+        description: formData.get("description") || null,
+        authorName: formData.get("authorName"),
+        grade: formData.get("grade"),
+        category: formData.get("category"),
+        turnstileToken: formData.get("turnstileToken"),
+    };
 
-        // 3. Dosya Validasyonu (Tip ve Boyut)
-        const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "image/jpeg", "image/png"];
-        if (!allowedTypes.includes(file.type)) {
-            return NextResponse.json({ error: "Desteklenmeyen dosya formatı." }, { status: 400 });
-        }
+    const validatedData = createMaterialSchema.parse(rawData);
 
-        const maxSize = 10 * 1024 * 1024; // 10 MB sınırı
-        if (file.size > maxSize) {
-            return NextResponse.json({ error: "Dosya boyutu 10MB'dan büyük olamaz." }, { status: 400 });
-        }
+    // 2. File Validation
+    const file = formData.get("file") as File | null;
+    if (!file) throw Object.assign(new Error("File is required"), { statusCode: 400 });
 
-        // 4. IP Hashing (Ziyaretçinin IP'sini anonimleştirerek güvenlik için saklama)
-        // x-forwarded-for Vercel/Cloudflare gibi proxy'lerin arkasından gerçek IP'yi alır
-        const ip = req.headers.get("x-forwarded-for") || "unknown";
-        const ipHash = crypto.createHash("sha256").update(ip).digest("hex");
+    const ALLOWED_TYPES = [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+        "image/png"
+    ];
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-        // 5. Dosyayı Cloudflare R2'ye Yükleme
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        // Çakışmaları önlemek için dosya adına unique bir zaman damgası ekliyoruz
-        const uniqueFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        const fileUrl = await uploadToR2(fileBuffer, uniqueFileName, file.type);
-
-        // 6. Prisma ile Veritabanına Kayıt
-        // Şema gereği dosya PENDING statüsünde kaydedilecek
-        const newMaterial = await prisma.material.create({
-            data: {
-                title,
-                description,
-                fileUrl,
-                fileType: file.name.split('.').pop() || "unknown", // pdf, docx vs.
-                fileSize: file.size,
-                authorName,
-                grade: grade as any,       // Enum dönüşümü
-                category: category as any, // Enum dönüşümü
-                ipHash,
-                turnstileToken,
-            },
-        });
-
-        // Başarılı yanıt
-        return NextResponse.json({
-            success: true,
-            message: "Materyal başarıyla yüklendi ve onay sırasına alındı.",
-            materialId: newMaterial.id
-        }, { status: 201 });
-
-    } catch (error: any) {
-        console.error("Materyal Yükleme Hatası:", error);
-        // Unique constraint (Aynı Turnstile token'ı tekrar kullanmaya çalışırlarsa) hatası yakalama
-        if (error.code === 'P2002') {
-            return NextResponse.json({ error: "Bu form zaten gönderilmiş." }, { status: 409 });
-        }
-        return NextResponse.json({ error: "Sunucu tarafında bir hata oluştu." }, { status: 500 });
+    if (!ALLOWED_TYPES.includes(file.type)) {
+        throw Object.assign(new Error("Unsupported file format"), { statusCode: 400 });
     }
-}
+
+    if (file.size > MAX_SIZE) {
+        throw Object.assign(new Error("File exceeds 10MB limit"), { statusCode: 400 });
+    }
+
+    // 3. Extract IP for Security
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+
+    // 4. Delegate to Service Layer
+    const newMaterial = await MaterialService.createMaterial({
+        ...validatedData,
+        file,
+        ip,
+    });
+
+    return successResponse(
+        { id: newMaterial.id },
+        "Material uploaded successfully and is pending approval",
+        undefined,
+        201
+    );
+});
