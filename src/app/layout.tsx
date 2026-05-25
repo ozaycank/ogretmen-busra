@@ -3,9 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css"; // Tailwind CSS'in dahil olduğu global stil dosyası
 
 // Bileşen importları
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import SkeletonCard from "@/components/Skeleton";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import SkeletonCard from "@/components/ui/Skeleton";
 
 // Türkçe karakter destekli font optimizasyonu
 const inter = Inter({ subsets: ["latin"] });

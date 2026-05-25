@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import MaterialCard from "@/components/MaterialCard";
+import MaterialCard from "@/components/features/MaterialCard";
 import { Sparkles, ArrowRight } from "lucide-react";
 // import prisma from "@/lib/prisma"; // Gerçek backend entegrasyonu başladığında aktif edilecek
 

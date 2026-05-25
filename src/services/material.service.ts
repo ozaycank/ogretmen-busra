@@ -1,6 +1,6 @@
 // src/services/material.service.ts
-import { prisma } from "@/lib/prisma";
-import { uploadToR2 } from "@/lib/r2";
+import { prisma } from "@/lib/db/prisma";
+import { uploadToR2 } from "@/lib/storage/r2";
 import { GradeLevel, ContentCategory } from "@prisma/client";
 import crypto from "crypto";
 

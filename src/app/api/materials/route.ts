@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { MaterialService } from "@/services/material.service";
-import { createMaterialSchema, getMaterialsQuerySchema } from "@/lib/validations/material.schema";
-import { successResponse } from "@/lib/api-response";
-import { withErrorHandler } from "@/lib/api-wrapper";
+import { createMaterialSchema, getMaterialsQuerySchema } from "@/schemas/material.schema";
+import { successResponse } from "@/lib/api/api-response";
+import { withErrorHandler } from "@/lib/api/api-wrapper";
 
 export const runtime = "nodejs";
 
