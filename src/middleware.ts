@@ -12,13 +12,23 @@ const ratelimit = new Ratelimit({
 });
 
 export default auth(async (req) => {
+    // İzleme (Tracing) için benzersiz ID oluştur
+    const requestId = req.headers.get("x-request-id") || crypto.randomUUID();
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-request-id", requestId);
+
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
     const path = req.nextUrl.pathname;
 
     // Rate Limiting
     if (path.startsWith("/api/") && req.method === "POST") {
         const { success } = await ratelimit.limit(`ratelimit_${ip}`);
-        if (!success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+        if (!success) {
+            return NextResponse.json(
+                { error: "Too many requests", requestId },
+                { status: 429, headers: { "x-request-id": requestId } }
+            );
+        }
     }
 
     // RBAC: Yetki Kontrolleri
@@ -29,10 +39,18 @@ export default auth(async (req) => {
     }
 
     if (path.startsWith("/admin") && !["ADMIN", "MODERATOR"].includes(userRole as string)) {
-        if (req.auth) return NextResponse.redirect(new URL("/", req.url)); // Yetkisizse ana sayfaya
+        if (req.auth) return NextResponse.redirect(new URL("/", req.url));
     }
 
-    return NextResponse.next();
+    // İstekleri downstream'e Request ID ile ilet
+    const response = NextResponse.next({
+        request: { headers: requestHeaders }
+    });
+
+    // Client'a (Tarayıcıya) Request ID'yi dön (Hata anında destek bileti açabilmeleri için)
+    response.headers.set("x-request-id", requestId);
+
+    return response;
 });
 
 export const config = {

@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { errorResponse } from "./api-response";
+import { logger } from "../logger";
+import * as Sentry from "@sentry/nextjs";
 
 export const withErrorHandler = (
     handler: (req: NextRequest) => Promise<any>
@@ -8,7 +10,23 @@ export const withErrorHandler = (
         try {
             return await handler(req);
         } catch (error: any) {
-            console.error(`[API_ERROR] ${req.method} ${req.nextUrl.pathname}:`, error);
+            const requestId = req.headers.get("x-request-id") || "unknown";
+
+            // 1. Yapısal (JSON) Loglama - Axiom/Datadog için
+            logger.error({
+                err: error,
+                method: req.method,
+                url: req.nextUrl.pathname,
+                requestId
+            }, "API Request Failed");
+
+            // 2. Alarm ve Takip - Sentry için
+            Sentry.captureException(error, {
+                tags: {
+                    endpoint: req.nextUrl.pathname,
+                    requestId
+                }
+            });
 
             // Prisma Unique Constraint Violation
             if (error.code === "P2002") {

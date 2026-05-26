@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control", value: "on" },
@@ -11,18 +12,28 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // experimental bloğu Next 15+ için kaldırıldı
   async headers() {
     return [
       {
-        // Tüm sayfalara bu güvenlik başlıklarını uygula
         source: "/(.*)",
         headers: securityHeaders,
       },
     ];
   },
-  // Vercel deployment optimizasyonları
   poweredByHeader: false,
   reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "ogretmen-busra",
+  project: "ogretmen-busra-nextjs",
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // Yeni Sentry (v8+) Sourcemap ayarları
+  sourcemaps: {
+    disable: false, // Eğer kaynak kod haritalarının (sourcemaps) tarayıcıya gitmesini istemiyorsanız true yapabilirsiniz
+  },
+  disableLogger: true,
+  automaticVercelMonitors: true,
+});
