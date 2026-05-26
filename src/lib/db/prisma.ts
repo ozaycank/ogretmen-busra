@@ -1,20 +1,27 @@
 import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const prismaClientSingleton = () => {
+    // 1. PostgreSQL bağlantı havuzunu (Pool) başlat
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+    // 2. Prisma PostgreSQL Adaptörünü oluştur
+    const adapter = new PrismaPg(pool);
+
+    // 3. Adaptörü Prisma Client'a bağla
     return new PrismaClient({
-        // Vercel deployment best practices: log errors in prod, add query/warn in dev
+        adapter,
         log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     });
 };
 
-// Ensure no TypeScript errors by extracting the exact return type
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
 const globalForPrisma = globalThis as unknown as {
     prisma: PrismaClientSingleton | undefined;
 };
 
-// Prevent multiple instances of Prisma Client in development (Next.js HMR)
 export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
 if (process.env.NODE_ENV !== "production") {
