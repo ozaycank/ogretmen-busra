@@ -6,10 +6,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum ContentStatus {
-  PENDING   // Ziyaretçi yüklemeleri onay bekler (Bot/Spam filtresi)
-  APPROVED  // Sitede listelenen aktif içerikler
-  REJECTED  // Reddedilen içerikler
+enum FileStatus {
+  UPLOAD_PENDING // Signed URL verildi, yükleme bekleniyor
+  PROCESSING     // QStash worker tarama yapıyor
+  APPROVED       // Temiz, yayında
+  REJECTED       // Virüslü veya geçersiz format
+  ORPHANED       // Zaman aşımına uğramış (Cron ile temizlenecek)
 }
 
 enum GradeLevel {
@@ -43,11 +45,18 @@ model Material {
   id            String          @id @default(uuid())
   title         String          @db.VarChar(150) // DB şişirme saldırılarına karşı katı sınır
   description   String?         @db.VarChar(500)
+  
+  fileKey       String          @unique @db.VarChar(255) // R2'deki gerçek dosya adı (UUID)
+  originalName  String          @db.VarChar(255)         // Kullanıcının verdiği ad
   fileUrl       String          @db.Text         // R2 / S3 dosya adresi
   fileType      String          @db.VarChar(10)  // pdf, docx, jpeg kontrolü için
   fileSize      Int                              // Byte cinsinden dosya boyutu kontrolü
+  mimeType      String          @db.VarChar(50)
   authorName    String          @db.VarChar(100) // "Büşra Öğretmen" veya Ziyaretçi Ad-Soyad
-  status        ContentStatus   @default(PENDING)
+  
+  // Security Lifecycle
+  status        FileStatus      @default(UPLOAD_PENDING)
+  scanResult    String?         @db.Text                 // Virüs tarama logu/sonucu
   grade         GradeLevel
   category      ContentCategory
   

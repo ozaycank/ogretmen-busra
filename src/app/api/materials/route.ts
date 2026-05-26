@@ -1,8 +1,9 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { MaterialService } from "@/services/material.service";
 import { createMaterialSchema, getMaterialsQuerySchema } from "@/schemas/material.schema";
 import { successResponse } from "@/lib/api/api-response";
 import { withErrorHandler } from "@/lib/api/api-wrapper";
+import { materialService } from "@/core/infrastructure/di/container";
 
 export const runtime = "nodejs";
 
@@ -85,3 +86,4 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
         201
     );
 });
+
