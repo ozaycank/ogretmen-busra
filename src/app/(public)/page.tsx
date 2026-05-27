@@ -1,96 +1,88 @@
-import React from "react";
-import Link from "next/link";
-import MaterialCard from "@/components/features/MaterialCard";
-import { Sparkles, ArrowRight } from "lucide-react";
-// import prisma from "@/lib/prisma"; // Gerçek backend entegrasyonu başladığında aktif edilecek
+import { Suspense } from "react";
+import { Metadata } from "next";
+import HeroSection from "@/components/features/home/HeroSection";
+import CategorySection from "@/components/features/home/CategorySection";
+import LatestMaterials from "@/components/features/home/LatestMaterials";
+import NewsSection from "@/components/features/home/NewsSection";
+import SkeletonCard from "@/components/ui/Skeleton";
 
-// Geliştirme aşamasında backend'i simüle eden mock fonksiyon (loading.tsx'i test etmek için 2 saniye bekler)
-async function getLatestMaterials() {
-  /* GERÇEK BACKEND KODU BURADA OLACAK:
-  return await prisma.material.findMany({
-    where: { status: "APPROVED" },
-    orderBy: { createdAt: "desc" },
-    take: 6,
-  });
-  */
+// 1. Gelişmiş SEO ve OpenGraph Meta Verileri
+export const metadata: Metadata = {
+  title: "Büşra Öğretmen | Eğlenceli Eğitim Materyalleri ve Etkinlikler",
+  description: "İlkokul ve okul öncesi öğretmenleri için binlerce ücretsiz etkinlik, ödev, boyama sayfası ve interaktif materyal arşivi.",
+  openGraph: {
+    title: "Büşra Öğretmen | Ücretsiz Eğitim Materyalleri",
+    description: "Sınıfınıza enerji katacak etkinlikleri hemen indirin.",
+    url: "https://busraogretmen.com",
+    siteName: "Büşra Öğretmen",
+    images: [{ url: "/images/og-home.jpg", width: 1200, height: 630 }],
+    locale: "tr_TR",
+    type: "website",
+  },
+};
 
-  await new Promise((resolve) => setTimeout(resolve, 2000)); // DB Gecikme simülasyonu
-  
-  return [
-    {
-      id: "1", title: "1. Sınıf İlk Okuma Yazma - E Sesi Fasikülü", description: "Öğrencilerin E sesini kolayca kavraması için hazırlanmış boyamalı ve eğlenceli etkinlik kağıtları.", fileType: "pdf", authorName: "Büşra Öğretmen", grade: "SINIF_1", category: "ETKINLIK", viewCount: 1250, downloadCount: 840,
-    },
-    {
-      id: "2", title: "4. Sınıf Fen Bilimleri Yer Kabuğu Yapbozu", description: "Yer kabuğunun yapısını anlatan kes-yapıştır etkinlik sayfası.", fileType: "pdf", authorName: "Ali Veli (Öğretmen)", grade: "SINIF_4", category: "INTERAKTIF_OYUN", viewCount: 450, downloadCount: 120,
-    },
-    {
-      id: "3", title: "Scratch İle İlk Kodlama Oyunu", description: "Blok tabanlı kodlama ile kedi yakalama oyunu yapımı yönergeleri.", fileType: "docx", authorName: "Büşra Öğretmen", grade: "GENEL", category: "KODLAMA", viewCount: 890, downloadCount: 650,
-    }
-  ];
-}
+// 2. JSON-LD Structured Data (Google Zengin Sonuçlar İçin)
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Büşra Öğretmen",
+  url: "https://busraogretmen.com",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://busraogretmen.com/materyaller?search={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
 
-export default async function Home() {
-  // Server tarafında veriler çekilir. Bu işlem bitene kadar loading.tsx ekranda kalır.
-  const latestMaterials = await getLatestMaterials();
-
+export default function HomePage() {
   return (
-    <div className="space-y-16">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       
-      {/* Hero Section - Dikkat Çekici Karşılama */}
-      <section className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] rounded-[2.5rem] p-10 md:p-16 overflow-hidden shadow-2xl">
-        {/* Dekoratif arka plan öğeleri */}
-        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 bg-[#e11d48] rounded-full blur-[120px] opacity-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-96 h-96 bg-[#0284c7] rounded-full blur-[120px] opacity-20 pointer-events-none" />
+      <div className="space-y-20 pb-10">
+        {/* Statik alanlar anında render edilir */}
+        <HeroSection />
+        <CategorySection />
 
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/90 text-sm font-medium mb-6 backdrop-blur-sm">
-            <Sparkles size={16} className="text-amber-400" />
-            <span>Binlerce ücretsiz eğitim materyali</span>
+        {/* Dinamik Veri 1: En Yeni Materyaller */}
+        <section className="space-y-8">
+          <div className="flex justify-between items-end">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">En Yeni Etkinlikler</h2>
+              <p className="text-slate-500 mt-2">Sisteme yeni eklenen ve editör onayından geçen içerikler.</p>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-6">
-            Eğitimi Eğlenceli <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-rose-400">
-              Hale Getiriyoruz
-            </span>
-          </h1>
-          <p className="text-lg text-slate-300 mb-8 max-w-xl">
-            Sınıfınıza enerji katacak etkinlikler, ödevler ve konu anlatımları.
-            Araştırmaya hemen başlayın veya kendi içeriklerinizi ekleyerek diğer öğretmenlere ilham verin.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="/materyaller" className="bg-white text-slate-900 px-8 py-3.5 rounded-full font-bold text-center hover:bg-gray-50 transition-colors shadow-lg flex items-center justify-center gap-2">
-              Keşfetmeye Başla <ArrowRight size={18} />
-            </Link>
+          
+          <Suspense fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          }>
+            <LatestMaterials />
+          </Suspense>
+        </section>
+
+        {/* Dinamik Veri 2: Eğitim Haberleri */}
+        <section className="space-y-8">
+          <div className="flex justify-between items-end">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Eğitim Gündemi</h2>
+              <p className="text-slate-500 mt-2">Atamalar, MEB duyuruları ve mesleki gelişmeler.</p>
+            </div>
           </div>
-        </div>
-      </section>
-
-      {/* İçerik Listeleme Section */}
-      <section className="space-y-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">En Yeni Materyaller</h2>
-            <p className="text-gray-500 mt-2">Sisteme yeni eklenen onaylı içerikler.</p>
-          </div>
-          <Link href="/materyaller" className="hidden sm:flex items-center gap-1 text-[#0284c7] font-semibold hover:underline">
-            Tümünü Gör <ArrowRight size={16} />
-          </Link>
-        </div>
-
-        {/* Veritabanından gelen verilerin map ile ekrana basılması */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestMaterials.map((material) => (
-            <MaterialCard key={material.id} material={material} />
-          ))}
-        </div>
-
-        <div className="sm:hidden mt-6 text-center">
-          <Link href="/materyaller" className="inline-flex items-center gap-1 text-[#0284c7] font-semibold hover:underline">
-            Tümünü Gör <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-    </div>
+          
+          <Suspense fallback={
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          }>
+            <NewsSection />
+          </Suspense>
+        </section>
+      </div>
+    </>
   );
 }
