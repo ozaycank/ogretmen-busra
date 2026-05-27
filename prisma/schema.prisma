@@ -51,7 +51,7 @@ model Material {
   fileUrl       String          @db.Text         // R2 / S3 dosya adresi
   fileType      String          @db.VarChar(10)  // pdf, docx, jpeg kontrolü için
   fileSize      Int                              // Byte cinsinden dosya boyutu kontrolü
-  mimeType      String          @db.VarChar(50)
+  mimeType      String          @db.VarChar(100)
   authorName    String          @db.VarChar(100) // "Büşra Öğretmen" veya Ziyaretçi Ad-Soyad
   
   // Security Lifecycle
