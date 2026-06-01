@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  /* Tailwind slate-50 (Şık ve göz yormayan açık gri) */
+  --foreground: #0f172a;
+  /* Tailwind slate-900 (Okunaklı koyu metin) */
 }
 
 @theme inline {
@@ -12,12 +14,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Karanlık mod zorlamasını sildik. Artık site her ortamda şık gri tonunda açılacak */
 
 body {
   background: var(--background);
