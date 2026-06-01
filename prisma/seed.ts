@@ -22,12 +22,8 @@ async function main() {
     });
     console.log("✅ Admin kullanıcısı hazır!");
 
-    // 2. Sahte Eğitim Materyalleri (Mock Data) Oluşturma
+    // 2. Sahte Eğitim Materyalleri (Mock Data)
     console.log("Mock eğitim materyalleri ekleniyor...");
-
-    // Veritabanını kirletmemek için daha önceki seed materyallerini (opsiyonel olarak) silebiliriz.
-    // await prisma.material.deleteMany({}); 
-
     const mockMaterials = [
         {
             title: "1. Sınıf İlk Okuma Yazma - E Sesi Fasikülü",
@@ -46,130 +42,11 @@ async function main() {
             category: ContentCategory.INTERAKTIF_OYUN,
             mimeType: "application/pdf",
             fileType: "pdf",
-        },
-        {
-            title: "Scratch İle İlk Kodlama Oyunu",
-            description: "Blok tabanlı kodlama eğitiminde ilk ders için kullanabileceğiniz kedi yakalama oyunu yapımı adım adım yönergeleri.",
-            authorName: "Büşra Öğretmen",
-            grade: GradeLevel.GENEL,
-            category: ContentCategory.KODLAMA,
-            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            fileType: "docx",
-        },
-        {
-            title: "2. Sınıf Matematik Toplama Çıkarma Problemleri",
-            description: "Hafta sonu ödevi olarak verilebilecek, günlük hayatla ilişkilendirilmiş 20 adet kolay ve orta seviye matematik problemi.",
-            authorName: "Zeynep Öğretmen",
-            grade: GradeLevel.SINIF_2,
-            category: ContentCategory.ODEV,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "Okul Öncesi Renkler ve Şekiller Eşleştirme Oyunu",
-            description: "Anaokulu öğrencileri için ince motor becerilerini geliştirecek renk ve şekil eşleştirme kartları.",
-            authorName: "Ayşe Hanım",
-            grade: GradeLevel.OKUL_ONCESI,
-            category: ContentCategory.ETKINLIK,
-            mimeType: "image/jpeg",
-            fileType: "jpeg",
-        },
-        {
-            title: "3. Sınıf Hayat Bilgisi Güvenli Hayat Özeti",
-            description: "Sınav öncesi tekrar yapabilmek için hazırlanmış tek sayfalık zihin haritası ve konu özeti.",
-            authorName: "Büşra Öğretmen",
-            grade: GradeLevel.SINIF_3,
-            category: ContentCategory.KONU_ANLATIMI,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "23 Nisan Ulusal Egemenlik ve Çocuk Bayramı Boyama Sayfaları",
-            description: "Sınıf panosunu süslemek için kullanılabilecek, çocukların çok seveceği 5 farklı 23 Nisan temalı boyama sayfası.",
-            authorName: "Mustafa Öğretmen",
-            grade: GradeLevel.GENEL,
-            category: ContentCategory.BELIRLI_GUN_VE_HAFTALAR,
-            mimeType: "application/zip",
-            fileType: "zip",
-        },
-        {
-            title: "Değerler Eğitimi: Dürüstlük ve Güven Hikayesi",
-            description: "Serbest etkinlik saatlerinde okunup üzerinde tartışılabilecek, dürüstlük temasını işleyen kısa çocuk hikayesi.",
-            authorName: "Fatma Öğretmen",
-            grade: GradeLevel.GENEL,
-            category: ContentCategory.DEGERLER_EGITIMI,
-            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            fileType: "docx",
-        },
-        {
-            title: "1. Sınıf Rakamları Yazıyorum Çalışma Yaprağı",
-            description: "1'den 9'a kadar rakamların doğru yazım yönlerini gösteren kılavuz çizgili çalışma sayfası.",
-            authorName: "Büşra Öğretmen",
-            grade: GradeLevel.SINIF_1,
-            category: ContentCategory.ETKINLIK,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "4. Sınıf Sosyal Bilgiler Milli Mücadele Kahramanları",
-            description: "Milli mücadele dönemi kahramanlarımızın hayatlarını kısaca anlatan, resimli araştırma ödevi şablonu.",
-            authorName: "Kemal Bey",
-            grade: GradeLevel.SINIF_4,
-            category: ContentCategory.ODEV,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "Tutum, Yatırım ve Türk Malları Haftası Taç Kalıbı",
-            description: "Yerli malı haftasında öğrencilerin kafalarına takabilmesi için tasarlanmış meyve figürlü taç şablonu.",
-            authorName: "Büşra Öğretmen",
-            grade: GradeLevel.GENEL,
-            category: ContentCategory.BELIRLI_GUN_VE_HAFTALAR,
-            mimeType: "image/png",
-            fileType: "png",
-        },
-        {
-            title: "3. Sınıf Fen Bilimleri Duyu Organlarımız Deneyi",
-            description: "Sınıf ortamında basit malzemelerle yapılabilecek, tat ve koku duyularını test eden eğlenceli bir deney yönergesi.",
-            authorName: "Elif Öğretmen",
-            grade: GradeLevel.SINIF_3,
-            category: ContentCategory.ETKINLIK,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "Okul Öncesi Makas Kullanımı Çalışmaları",
-            description: "Çizgi üzerinden kesme becerisini geliştirecek, zorluk derecesi artan 4 farklı kesme çalışması.",
-            authorName: "Ayşe Hanım",
-            grade: GradeLevel.OKUL_ONCESI,
-            category: ContentCategory.ETKINLIK,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "Code.org Ders-2 Çevrimdışı Yönerge Yönleri",
-            description: "Bilgisayarsız kodlama (unplugged coding) etkinliği için sağ, sol, yukarı, aşağı komut okları şablonu.",
-            authorName: "Büşra Öğretmen",
-            grade: GradeLevel.GENEL,
-            category: ContentCategory.KODLAMA,
-            mimeType: "application/pdf",
-            fileType: "pdf",
-        },
-        {
-            title: "2. Sınıf Türkçe Zıt Anlamlı Kelimeler Tombalası",
-            description: "Zıt anlamlı kelimeleri öğretirken sınıfça oynanabilecek eğitsel tombala materyali.",
-            authorName: "Zeynep Öğretmen",
-            grade: GradeLevel.SINIF_2,
-            category: ContentCategory.INTERAKTIF_OYUN,
-            mimeType: "application/pdf",
-            fileType: "pdf",
         }
     ];
 
     for (const material of mockMaterials) {
-        // Her veri için benzersiz R2 ID'si oluşturuyoruz
         const uuid = crypto.randomUUID();
-
         await prisma.material.create({
             data: {
                 title: material.title,
@@ -179,35 +56,54 @@ async function main() {
                 category: material.category,
                 fileType: material.fileType,
                 mimeType: material.mimeType,
-
-                // Sahte Teknik Veriler
-                fileSize: Math.floor(Math.random() * 5000000) + 100000, // 100KB ile 5MB arası
+                fileSize: 1024000,
                 fileKey: `mock/${uuid}.${material.fileType}`,
-                originalName: `mock_dosya_${uuid.substring(0, 5)}.${material.fileType}`,
-                fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // Dummy indirme linki
-
-                status: FileStatus.APPROVED, // Test için onaylı gelsin
-
-                // Rastgele görüntülenme ve indirme istatistikleri
-                viewCount: Math.floor(Math.random() * 1500) + 50,
-                downloadCount: Math.floor(Math.random() * 800) + 10,
-
-                // Güvenlik ID'leri
-                ipHash: "seed_script_ip_mock",
+                originalName: `mock_${uuid.substring(0, 5)}.${material.fileType}`,
+                fileUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                status: FileStatus.APPROVED,
+                viewCount: 150,
+                downloadCount: 40,
+                ipHash: "seed_script",
                 turnstileToken: crypto.randomUUID(),
             }
         });
     }
+    console.log("✅ Materyaller eklendi!");
 
-    console.log(`✅ Toplam ${mockMaterials.length} adet sahte materyal başarıyla eklendi!`);
+    // 3. Test Haberleri Ekleme (News)
+    console.log("Mock haberler ekleniyor...");
+    const mockNews = [
+        {
+            title: "2026 Yılı Öğretmen Atama Takvimi ve Kontenjanlar Açıklandı",
+            content: "Milli Eğitim Bakanlığı (MEB) tarafından yapılan son açıklamaya göre, 2026 yılı için beklenen öğretmen atama takvimi netleşti. Bakanlık, ilk etapta 40 bin yeni öğretmen ataması yapılacağını duyurdu.\n\nSınıf öğretmenliği, özel eğitim ve okul öncesi branşlarına ağırlık verileceği belirtilirken, başvuruların önümüzdeki ay MEBBİS üzerinden alınacağı bildirildi. Adaylar mülakat tarihlerine e-Devlet üzerinden erişebilecekler.\n\nYetkililer sürecin şeffaf ilerleyeceğini ve güvenlik soruşturmalarının atama öncesi tamamlanacağını vurguladı.",
+            imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=1000&auto=format&fit=crop",
+            label: "ATAMA",
+            viewCount: 1250,
+        },
+        {
+            title: "İlkokullarda Beceri Temelli Yeni Müfredat Uygulamasına Geçiliyor",
+            content: "Eğitimde köklü bir değişikliğe gidiliyor. Gelecek eğitim-öğretim yılından itibaren ilkokul seviyesinde 'Beceri Temelli Eğitim' modeline geçileceği açıklandı.\n\nBu yeni müfredat ile öğrencilerin sadece akademik başarıları değil, aynı zamanda sosyal, duygusal ve fiziksel gelişimleri de merkeze alınacak. Geleneksel ezberci eğitim terk edilecek ve proje bazlı öğrenme modeline ağırlık verilecek.\n\nÖğretmenler için bu yaz döneminde kapsamlı hizmet içi eğitim seminerleri düzenlenecek. Yeni ders materyalleri, etkinlik havuzları ve kılavuz kitaplar MEB'in dijital platformlarında erişime açılacak.",
+            imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1000&auto=format&fit=crop",
+            label: "MEB",
+            viewCount: 840,
+        }
+    ];
+
+    for (const news of mockNews) {
+        await prisma.news.create({ data: news });
+    }
+    console.log("✅ Haberler eklendi!");
+
     console.log("🎉 Seed işlemi tamamlandı.");
 }
 
+// Güvenli (Safe) Promise Chain çalıştırıcısı
 main()
-    .catch((e) => {
-        console.error("HATA:", e);
-        process.exit(1);
-    })
-    .finally(async () => {
+    .then(async () => {
         await prisma.$disconnect();
+    })
+    .catch(async (e) => {
+        console.error("HATA:", e);
+        await prisma.$disconnect();
+        process.exit(1);
     });
