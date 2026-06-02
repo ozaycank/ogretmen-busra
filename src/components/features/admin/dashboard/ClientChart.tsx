@@ -10,7 +10,8 @@ interface ChartProps {
 export default function ClientChart({ data }: ChartProps) {
   return (
     <div className="h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      {/* ÇÖZÜM BURADA: width="99%" ve height={320} olarak değiştirildi */}
+      <ResponsiveContainer width="99%" height={320}>
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorIndirme" x1="0" y1="0" x2="0" y2="1">

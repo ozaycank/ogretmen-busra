@@ -156,3 +156,24 @@ model AuditLog {
 
   @@index([userId, action, createdAt])
 }
+
+// Dinamik Sistem Ayarları
+model SystemSetting {
+  key       String   @id @db.VarChar(100) // Örn: "MODERATION_RULES"
+  value     Json     // Ayarların tutulduğu JSON objesi
+  updatedAt DateTime @updatedAt
+  updatedBy String?  // Değiştiren Admin ID
+}
+
+// Ayar Değişiklik Geçmişi (Settings History)
+model SettingHistory {
+  id          String   @id @default(uuid())
+  settingKey  String   @db.VarChar(100)
+  oldValue    Json?
+  newValue    Json
+  changedBy   String   // İşlemi yapan Admin ID
+  reason      String?  @db.VarChar(255) // Değişim sebebi (Özellikle tehlikeli ayarlar için)
+  createdAt   DateTime @default(now())
+
+  @@index([settingKey, createdAt])
+}

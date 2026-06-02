@@ -7,21 +7,20 @@ import { useAdminLayout } from "@/providers/AdminLayoutProvider";
 import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper } from "lucide-react";
 import { Role } from "@prisma/client";
 
-// RBAC: Menü Elemanları ve İzin Verilen Roller
+// ÇÖZÜM: Tüm Materyaller kısmına 'exact: true' parametresi eklendi
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: [Role.ADMIN, Role.MODERATOR] },
   { name: "Onay Bekleyenler", href: "/admin/materials/pending", icon: CheckSquare, roles: [Role.ADMIN, Role.MODERATOR] },
-  { name: "Tüm Materyaller", href: "/admin/materials", icon: Files, roles: [Role.ADMIN, Role.MODERATOR] },
-  { name: "Haber Yönetimi", href: "/admin/news", icon: Newspaper, roles: [Role.ADMIN, Role.MODERATOR] }, // YENİ EKLENEN SAYFA
+  { name: "Tüm Materyaller", href: "/admin/materials", icon: Files, roles: [Role.ADMIN, Role.MODERATOR], exact: true },
+  { name: "Haber Yönetimi", href: "/admin/news", icon: Newspaper, roles: [Role.ADMIN, Role.MODERATOR] }, 
   { name: "Kullanıcı Yönetimi", href: "/admin/users", icon: Users, roles: [Role.ADMIN] },
-  { name: "Sistem Ayarları", href: "/admin/settings", icon: Settings, roles: [Role.ADMIN] },
+  { name: "Sistem Ayarları", href: "/admin/materials/settings", icon: Settings, roles: [Role.ADMIN] },
 ];
 
 export default function AdminSidebar({ userRole }: { userRole: Role }) {
   const pathname = usePathname();
   const { isSidebarOpen, setSidebarOpen } = useAdminLayout();
 
-  // RBAC Filtreleme: TypeScript hata vermesin diye (item.roles as Role[]) cast işlemi eklendi
   const authorizedNavItems = NAV_ITEMS.filter(item => (item.roles as Role[]).includes(userRole));
 
   return (
@@ -54,7 +53,12 @@ export default function AdminSidebar({ userRole }: { userRole: Role }) {
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
           <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Ana Menü</p>
           {authorizedNavItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            
+            // ÇÖZÜM UYGULAMASI: Eğer exact true ise sadece tam eşleşmeye bak, değilse alt klasörlere de izin ver.
+            const isActive = item.exact 
+              ? pathname === item.href 
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+
             return (
               <Link
                 key={item.name}
