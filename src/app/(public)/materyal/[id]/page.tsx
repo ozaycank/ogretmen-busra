@@ -112,7 +112,15 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               </p>
 
               <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 py-4 border-y border-slate-100">
-                <div className="flex items-center gap-2"><User size={18} className="text-slate-400"/> <span className="font-semibold text-slate-700">{material.authorName}</span></div>
+                <div className="flex items-center gap-2">
+  <User size={18} className="text-slate-400"/> 
+  <Link 
+    href={`/yazar/${encodeURIComponent(material.authorName)}`} 
+    className="font-semibold text-sky-600 hover:text-sky-700 hover:underline transition-colors"
+  >
+    {material.authorName}
+  </Link>
+</div>
                 <div className="flex items-center gap-2"><Calendar size={18} className="text-slate-400"/> {new Date(material.createdAt).toLocaleDateString("tr-TR")}</div>
                 <div className="flex items-center gap-2"><Eye size={18} className="text-slate-400"/> {material.viewCount + 1} Görüntülenme</div>
                 <div className="flex items-center gap-2"><Download size={18} className="text-slate-400"/> {material.downloadCount} İndirme</div>

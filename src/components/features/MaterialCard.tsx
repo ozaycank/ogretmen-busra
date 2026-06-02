@@ -1,8 +1,11 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { FileText, Download, Eye, FileArchive, FileImage } from "lucide-react";
+import { FileText, Download, Eye, FileArchive, FileImage, Heart } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
 
-// Şema ile uyumlu tip tanımı
+
 interface MaterialProps {
   id: string;
   title: string;
@@ -15,7 +18,6 @@ interface MaterialProps {
   downloadCount: number;
 }
 
-// Dosya tipine göre dinamik ikon seçimi
 const getFileIcon = (type: string) => {
   switch (type.toLowerCase()) {
     case "pdf": return <FileText className="text-red-500" size={24} />;
@@ -26,7 +28,6 @@ const getFileIcon = (type: string) => {
   }
 };
 
-// Enum'ları Türkçe etiketlere çeviren yardımcı fonksiyon
 const formatEnum = (text: string) => {
   return text.replace(/_/g, " ").replace(/\w\S*/g, (txt) => {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -34,9 +35,26 @@ const formatEnum = (text: string) => {
 };
 
 export default function MaterialCard({ material }: { material: MaterialProps }) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isFav = isFavorite(material.id);
   return (
-    <Link href={`/materyal/${material.id}`} className="group block h-full">
+    <div className="group block h-full relative">
       <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative overflow-hidden group-hover:-translate-y-1">
+        {/* Favori (Kalp) Butonu - En Üst Katman */}
+        <button 
+          onClick={(e) => {
+            e.preventDefault(); // Sayfa yönlendirmesini engeller
+            e.stopPropagation(); // Tıklamanın Link'e geçmesini engeller
+            toggleFavorite(material.id);
+          }}
+          className={`absolute top-4 right-4 z-30 p-2 rounded-full backdrop-blur-sm shadow-sm transition-all hover:scale-110 active:scale-95 ${isFav ? "bg-rose-50 text-rose-500" : "bg-white/80 text-slate-400 hover:text-rose-400"}`}
+          aria-label="Favorilere Ekle"
+        >
+          <Heart size={20} className={isFav ? "fill-rose-500" : ""} />
+        </button>
+
+        {/* ÇÖZÜM: HTML standartlarını bozmadan tüm kartı tıklanabilir yapan görünmez ana katman */}
+        <Link href={`/materyal/${material.id}`} className="absolute inset-0 z-10" aria-label={material.title} />
         
         {/* Kategori ve Sınıf Etiketleri */}
         <div className="flex gap-2 mb-4">
@@ -64,22 +82,29 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
         </p>
 
         {/* Yazar ve Metrikler */}
-        <div className="border-t border-gray-50 pt-4 flex justify-between items-center mt-auto">
-          <div className="flex items-center gap-2">
+        <div className="border-t border-gray-50 pt-4 flex justify-between items-center mt-auto relative z-20">
+          
+          {/* ÇÖZÜM: z-20 katmanında bağımsız tıklanabilir Yazar Portfolyo Linki */}
+          <Link 
+            href={`/yazar/${encodeURIComponent(material.authorName)}`}
+            className="flex items-center gap-2 group/author hover:opacity-80 transition-opacity"
+          >
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#0284c7] text-white flex items-center justify-center text-[10px] font-bold">
               {material.authorName.charAt(0)}
             </div>
-            <span className="text-xs font-medium text-gray-600 truncate max-w-[100px]">
+            <span className="text-xs font-bold text-gray-600 group-hover/author:text-[#0284c7] group-hover/author:underline truncate max-w-[100px] transition-colors">
               {material.authorName}
             </span>
-          </div>
+          </Link>
 
-          <div className="flex gap-3 text-xs text-gray-400 font-medium">
+          {/* Metrikler */}
+          <div className="flex gap-3 text-xs text-gray-400 font-medium select-none">
             <span className="flex items-center gap-1"><Eye size={14} /> {material.viewCount}</span>
             <span className="flex items-center gap-1"><Download size={14} /> {material.downloadCount}</span>
           </div>
+
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

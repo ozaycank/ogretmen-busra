@@ -8,6 +8,7 @@ import MaterialSearch from "@/components/features/materials/MaterialSearch";
 import Pagination from "@/components/features/materials/Pagination";
 import SkeletonCard from "@/components/ui/Skeleton";
 import { SearchX } from "lucide-react";
+import FavoritesLink from "@/components/features/favorites/FavoritesLink";
 
 // Dinamik SEO Metadata
 export async function generateMetadata({ searchParams }: { searchParams: Promise<any> }): Promise<Metadata> {
@@ -38,13 +39,20 @@ export default async function MaterialsPage({
 
       <main className="flex-1 w-full min-w-0">
         <header className="mb-8 space-y-6">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-              Eğitim Materyalleri
-            </h1>
-            <p className="text-slate-500 mt-2">
-              Sınıfınıza en uygun içerikleri arayın ve filtreleyin.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+                Eğitim Materyalleri
+              </h1>
+              <p className="text-slate-500 mt-2">
+                Sınıfınıza en uygun içerikleri arayın ve filtreleyin.
+              </p>
+            </div>
+            
+            {/* Dinamik Favoriler Butonumuz */}
+            <div>
+              <FavoritesLink />
+            </div>
           </div>
           <MaterialSearch />
         </header>

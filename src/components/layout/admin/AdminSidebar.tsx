@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminLayout } from "@/providers/AdminLayoutProvider";
-import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper } from "lucide-react";
+import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper, ShieldCheck } from "lucide-react";
 import { Role } from "@prisma/client";
 
 // ÇÖZÜM: Tüm Materyaller kısmına 'exact: true' parametresi eklendi
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { name: "Haber Yönetimi", href: "/admin/news", icon: Newspaper, roles: [Role.ADMIN, Role.MODERATOR] }, 
   { name: "Kullanıcı Yönetimi", href: "/admin/users", icon: Users, roles: [Role.ADMIN] },
   { name: "Sistem Ayarları", href: "/admin/materials/settings", icon: Settings, roles: [Role.ADMIN] },
+  { name: "Güvenlik & Moderasyon", href: "/admin/moderation", icon: ShieldCheck, roles: [Role.ADMIN, Role.MODERATOR] },
 ];
 
 export default function AdminSidebar({ userRole }: { userRole: Role }) {
