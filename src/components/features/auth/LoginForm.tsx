@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useActionState, useEffect } from "react";
-import { loginAction, AuthState } from "@/app/(admin)/login/actions";
+import { loginAction, AuthState } from "@/app/admin/login/actions";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { ShieldCheck, Loader2, AlertCircle } from "lucide-react";
