@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminLayout } from "@/providers/AdminLayoutProvider";
-import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X } from "lucide-react";
+import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper } from "lucide-react";
 import { Role } from "@prisma/client";
 
 // RBAC: Menü Elemanları ve İzin Verilen Roller
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: [Role.ADMIN, Role.MODERATOR] },
   { name: "Onay Bekleyenler", href: "/admin/materials/pending", icon: CheckSquare, roles: [Role.ADMIN, Role.MODERATOR] },
   { name: "Tüm Materyaller", href: "/admin/materials", icon: Files, roles: [Role.ADMIN, Role.MODERATOR] },
+  { name: "Haber Yönetimi", href: "/admin/news", icon: Newspaper, roles: [Role.ADMIN, Role.MODERATOR] }, // YENİ EKLENEN SAYFA
   { name: "Kullanıcı Yönetimi", href: "/admin/users", icon: Users, roles: [Role.ADMIN] },
   { name: "Sistem Ayarları", href: "/admin/settings", icon: Settings, roles: [Role.ADMIN] },
 ];
