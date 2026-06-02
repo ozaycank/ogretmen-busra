@@ -41,6 +41,12 @@ enum Role {
   USER
 }
 
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
 model Material {
   id            String          @id @default(uuid())
   title         String          @db.VarChar(150) // DB şişirme saldırılarına karşı katı sınır
@@ -78,16 +84,25 @@ model Material {
 
 // Görsel 1: Eğitim Haberleri Modülü
 model News {
-  id          String   @id @default(uuid())
-  title       String   @db.VarChar(200)
-  content     String   @db.Text
-  imageUrl    String?  @db.Text
-  label       String   @db.VarChar(50) // MAAŞ, ATAMA, GÜNDEM, MEB
-  viewCount   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String     @id @default(uuid())
+  title           String     @db.VarChar(200)
+  slug            String     @unique @db.VarChar(255) // SEO Dostu URL
+  content         String     @db.Text
+  imageUrl        String?    @db.Text
+  label           String     @db.VarChar(50) 
+  
+  // CMS Workflow & SEO
+  status          PostStatus @default(DRAFT)
+  seoTitle        String?    @db.VarChar(60)
+  seoDescription  String?    @db.VarChar(160)
+  publishedAt     DateTime?  
+  
+  viewCount       Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
-  @@index([createdAt])
+  @@index([status, publishedAt])
+  @@index([slug])
 }
 
 // Görsel 3: Alt Kısımdaki Canlı/Toplam İstatistik Sayaçları

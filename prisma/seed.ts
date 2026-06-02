@@ -75,6 +75,8 @@ async function main() {
     const mockNews = [
         {
             title: "2026 Yılı Öğretmen Atama Takvimi ve Kontenjanlar Açıklandı",
+            slug: "2026-yili-ogretmen-atama-takvimi", // YENİ EKLENDİ
+            status: "PUBLISHED", // YENİ EKLENDİ
             content: "Milli Eğitim Bakanlığı (MEB) tarafından yapılan son açıklamaya göre, 2026 yılı için beklenen öğretmen atama takvimi netleşti. Bakanlık, ilk etapta 40 bin yeni öğretmen ataması yapılacağını duyurdu.\n\nSınıf öğretmenliği, özel eğitim ve okul öncesi branşlarına ağırlık verileceği belirtilirken, başvuruların önümüzdeki ay MEBBİS üzerinden alınacağı bildirildi. Adaylar mülakat tarihlerine e-Devlet üzerinden erişebilecekler.\n\nYetkililer sürecin şeffaf ilerleyeceğini ve güvenlik soruşturmalarının atama öncesi tamamlanacağını vurguladı.",
             imageUrl: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=1000&auto=format&fit=crop",
             label: "ATAMA",
@@ -82,6 +84,8 @@ async function main() {
         },
         {
             title: "İlkokullarda Beceri Temelli Yeni Müfredat Uygulamasına Geçiliyor",
+            slug: "ilkokullarda-beceri-temelli-yeni-mufredat", // YENİ EKLENDİ
+            status: "PUBLISHED", // YENİ EKLENDİ
             content: "Eğitimde köklü bir değişikliğe gidiliyor. Gelecek eğitim-öğretim yılından itibaren ilkokul seviyesinde 'Beceri Temelli Eğitim' modeline geçileceği açıklandı.\n\nBu yeni müfredat ile öğrencilerin sadece akademik başarıları değil, aynı zamanda sosyal, duygusal ve fiziksel gelişimleri de merkeze alınacak. Geleneksel ezberci eğitim terk edilecek ve proje bazlı öğrenme modeline ağırlık verilecek.\n\nÖğretmenler için bu yaz döneminde kapsamlı hizmet içi eğitim seminerleri düzenlenecek. Yeni ders materyalleri, etkinlik havuzları ve kılavuz kitaplar MEB'in dijital platformlarında erişime açılacak.",
             imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1000&auto=format&fit=crop",
             label: "MEB",
@@ -90,7 +94,8 @@ async function main() {
     ];
 
     for (const news of mockNews) {
-        await prisma.news.create({ data: news });
+        // TypeScript hatası almamak için veriyi any olarak zorlayabiliriz (seed dosyası olduğu için güvenlidir)
+        await prisma.news.create({ data: news as any });
     }
     console.log("✅ Haberler eklendi!");
 
