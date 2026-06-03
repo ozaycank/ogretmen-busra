@@ -19,7 +19,7 @@ const s3Client = new S3Client({
  */
 export async function uploadToR2(fileBuffer: Buffer, fileName: string, contentType: string): Promise<string> {
     const bucketName = process.env.R2_BUCKET_NAME as string;
-    const publicDomain = process.env.R2_PUBLIC_DOMAIN as string; // Örn: https://pub-xxxxxxxx.r2.dev
+    const publicDomain = process.env.R2_PUBLIC_URL as string;
 
     const command = new PutObjectCommand({
         Bucket: bucketName,

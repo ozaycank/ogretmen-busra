@@ -101,18 +101,30 @@ export default function UploadForm() {
         body: JSON.stringify(data)
       });
       
-      const { signedUrl, error } = await res.json();
+      const { signedUrl, materialId, error } = await res.json(); 
       if (error) throw new Error(error);
-
-      // 2. XMLHttpRequest ile Doğrudan R2'ye Yükle (Progress Bar için)
+      // 2. XMLHttpRequest ile Doğrudan R2'ye Yükle
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) setUploadProgress(Math.round((event.loaded / event.total) * 100));
         };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve(true);
-          else reject(new Error("Dosya yüklenirken R2 reddetti."));
+        xhr.onload = async () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            
+            try {
+              await fetch("/api/materials/confirm-upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                // ÇÖZÜM 2: Yakaladığımız materialId'yi doğrudan kullanıyoruz
+                body: JSON.stringify({ materialId }) 
+              });
+              resolve(true);
+            } catch (e) {
+              reject(new Error("Onay bildiriminde hata oluştu."));
+            }
+            
+          } else reject(new Error("Dosya yüklenirken R2 reddetti. (CORS ayarlarınızı kontrol edin)"));
         };
         xhr.onerror = () => reject(new Error("Ağ hatası oluştu."));
         

@@ -11,8 +11,13 @@ import { CookieProvider } from "@/providers/CookieProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// ÇÖZÜM: metadataBase ve dinamik title template eklendi
 export const metadata: Metadata = {
-  title: "Büşra Öğretmen | Eğitim Materyalleri ve Etkinlik Deposu",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://busraogretmen.com"),
+  title: {
+    default: "Büşra Öğretmen | Eğitim Materyalleri ve Etkinlik Deposu",
+    template: "%s | Büşra Öğretmen",
+  },
   description: "Öğretmenler, öğrenciler ve veliler için ücretsiz etkinlik, ödev, konu anlatımı ve eğitim materyalleri arşivi.",
 };
 
@@ -24,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${inter.className} min-h-screen flex flex-col bg-slate-50 text-slate-900`}>
-        {/* YENİ EKLENEN: Tüm uygulamayı CookieProvider ile sarmalıyoruz */}
+        {/* Tüm uygulamayı CookieProvider ile sarmalıyoruz */}
         <CookieProvider>
           
           <Navbar />

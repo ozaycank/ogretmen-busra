@@ -12,7 +12,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // experimental bloğu Next 15+ için kaldırıldı
   async headers() {
     return [
       {
@@ -28,12 +27,12 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   org: "ogretmen-busra",
   project: "ogretmen-busra-nextjs",
+
+  // Vercel / CI ortamında logları sessize al
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  // Yeni Sentry (v8+) Sourcemap ayarları
+
   sourcemaps: {
-    disable: false, // Eğer kaynak kod haritalarının (sourcemaps) tarayıcıya gitmesini istemiyorsanız true yapabilirsiniz
-  },
-  disableLogger: true,
-  automaticVercelMonitors: true,
+    disable: false, // Sentry'e sourcemap yüklenmesini sağlar (Hata takibi için gereklidir)
+  }
 });
