@@ -3,6 +3,7 @@ import { authConfig } from "./config/auth.config";
 import { NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { AnalyticsService } from "./services/analytics.service";
 
 const { auth } = NextAuth(authConfig);
 const ratelimit = new Ratelimit({
@@ -18,6 +19,7 @@ export default auth(async (req) => {
     requestHeaders.set("x-request-id", requestId);
 
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const userAgent = req.headers.get("user-agent") || "unknown";
     const path = req.nextUrl.pathname;
 
     // Rate Limiting
@@ -30,7 +32,17 @@ export default auth(async (req) => {
             );
         }
     }
+    if (!path.startsWith("/api/") && !path.startsWith("/admin")) {
+        // KVKK Uyumlu IP Hashing
+        const dataToHash = new TextEncoder().encode(ip + userAgent + new Date().toISOString().split("T")[0]);
+        crypto.subtle.digest("SHA-256", dataToHash).then((hashBuffer) => {
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const ipHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
 
+            // Asenkron olarak Redis'e yaz (Kullanıcıyı bekletmez)
+            AnalyticsService.trackVisit(ipHash);
+        });
+    }
     // RBAC: Yetki Kontrolleri
     const userRole = req.auth?.user?.role;
 
