@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "KVKK Aydınlatma Metni | Büşra Öğretmen",
     description: "Kişisel verilerinizin hangi hukuki gerekçelerle ve nasıl işlendiğini öğrenin.",
     type: "website",
-    url: "https://busraogretmen.com/kvkk-aydinlatma-metni",
+    url: "https://ogretmenbusra.com/kvkk-aydinlatma-metni",
   }
 };
 
@@ -34,16 +34,16 @@ export default function KVKKPage() {
     "@graph": [
       {
         "@type": "WebPage",
-        "@id": "https://busraogretmen.com/kvkk-aydinlatma-metni",
-        "url": "https://busraogretmen.com/kvkk-aydinlatma-metni",
+        "@id": "https://ogretmenbusra.com/kvkk-aydinlatma-metni",
+        "url": "https://ogretmenbusra.com/kvkk-aydinlatma-metni",
         "name": "KVKK Aydınlatma Metni | Büşra Öğretmen",
         "dateModified": new Date("2026-06-01").toISOString(),
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://busraogretmen.com" },
-          { "@type": "ListItem", "position": 2, "name": "KVKK Aydınlatma Metni", "item": "https://busraogretmen.com/kvkk-aydinlatma-metni" }
+          { "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://ogretmenbusra.com" },
+          { "@type": "ListItem", "position": 2, "name": "KVKK Aydınlatma Metni", "item": "https://ogretmenbusra.com/kvkk-aydinlatma-metni" }
         ]
       }
     ]
@@ -178,7 +178,7 @@ export default function KVKKPage() {
                   <ul className="m-0 p-0 list-none space-y-2">
                     <li className="flex items-center gap-2 m-0">
                       <span className="font-medium">E-posta:</span>
-                      <a href="mailto:iletisim@busraogretmen.com" className="text-sky-600 font-bold m-0 hover:underline">iletisim@busraogretmen.com</a>
+                      <a href="mailto:iletisim@ogretmenbusra.com" className="text-sky-600 font-bold m-0 hover:underline">iletisim@ogretmenbusra.com</a>
                     </li>
                     <li className="flex items-center gap-2 m-0">
                       <span className="font-medium">Web Formu:</span>

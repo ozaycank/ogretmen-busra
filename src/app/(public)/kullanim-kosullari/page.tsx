@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "Kullanım Koşulları | Büşra Öğretmen",
     description: "Platform kurallarımızı, haklarınızı ve sorumluluklarınızı öğrenin.",
     type: "website",
-    url: "https://busraogretmen.com/kullanim-kosullari",
+    url: "https://ogretmenbusra.com/kullanim-kosullari",
   }
 };
 
@@ -38,16 +38,16 @@ export default function TermsOfServicePage() {
     "@graph": [
       {
         "@type": "WebPage",
-        "@id": "https://busraogretmen.com/kullanim-kosullari",
-        "url": "https://busraogretmen.com/kullanim-kosullari",
+        "@id": "https://ogretmenbusra.com/kullanim-kosullari",
+        "url": "https://ogretmenbusra.com/kullanim-kosullari",
         "name": "Kullanım Koşulları | Büşra Öğretmen",
         "dateModified": new Date("2026-06-01").toISOString(),
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://busraogretmen.com" },
-          { "@type": "ListItem", "position": 2, "name": "Kullanım Koşulları", "item": "https://busraogretmen.com/kullanim-kosullari" }
+          { "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://ogretmenbusra.com" },
+          { "@type": "ListItem", "position": 2, "name": "Kullanım Koşulları", "item": "https://ogretmenbusra.com/kullanim-kosullari" }
         ]
       }
     ]
@@ -112,7 +112,7 @@ export default function TermsOfServicePage() {
 
               <TermsSection id="tanimlar" title="2. Tanımlar">
                 <ul>
-                  <li><strong>Platform:</strong> busraogretmen.com alan adı üzerinden hizmet veren dijital kütüphaneyi ifade eder.</li>
+                  <li><strong>Platform:</strong> ogretmenbusra.com alan adı üzerinden hizmet veren dijital kütüphaneyi ifade eder.</li>
                   <li><strong>Kullanıcı:</strong> Platformu ziyaret eden, üye olan veya içerik indiren gerçek veya tüzel kişileri ifade eder.</li>
                   <li><strong>Yükleyici (Uploader):</strong> Kendi rızasıyla platforma eğitim materyali ekleyen kullanıcıyı ifade eder.</li>
                   <li><strong>Materyal:</strong> Kullanıcılar tarafından yüklenen PDF, DOCX, Resim veya Arşiv (ZIP/RAR) formatlarındaki her türlü eğitsel içeriği ifade eder.</li>
@@ -191,7 +191,7 @@ export default function TermsOfServicePage() {
                 </p>
                 <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-4 inline-block print:border-slate-300">
                   <p className="font-bold text-slate-900 m-0">Yasal Destek Birimi:</p>
-                  <a href="mailto:iletisim@busraogretmen.com" className="text-sky-600 font-bold m-0 hover:underline">iletisim@busraogretmen.com</a>
+                  <a href="mailto:iletisim@ogretmenbusra.com" className="text-sky-600 font-bold m-0 hover:underline">iletisim@ogretmenbusra.com</a>
                 </div>
               </TermsSection>
 

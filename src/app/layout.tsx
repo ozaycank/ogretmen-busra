@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 // ÇÖZÜM: metadataBase ve dinamik title template eklendi
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://busraogretmen.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://ogretmenbusra.com"),
   title: {
     default: "Büşra Öğretmen | Eğitim Materyalleri ve Etkinlik Deposu",
     template: "%s | Büşra Öğretmen",

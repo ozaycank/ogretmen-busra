@@ -32,7 +32,7 @@ export class UploadService {
         const fileId = crypto.randomUUID();
         const extension = data.fileName.split('.').pop()?.toLowerCase() || "unknown";
         const safeFileKey = `uploads/materials/${fileId}.${extension}`;
-        const r2PublicUrl = process.env.R2_PUBLIC_URL || "https://pub-r2.busraogretmen.com";
+        const r2PublicUrl = process.env.R2_PUBLIC_URL || "https://pub-r2.ogretmenbusra.com";
 
         // DB'ye Taslak Kayıt Ekle (UPLOAD_PENDING)
         await prisma.material.create({

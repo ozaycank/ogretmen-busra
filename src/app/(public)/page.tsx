@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Büşra Öğretmen | Ücretsiz Eğitim Materyalleri",
     description: "Sınıfınıza enerji katacak etkinlikleri hemen indirin.",
-    url: "https://busraogretmen.com",
+    url: "https://ogretmenbusra.com",
     siteName: "Büşra Öğretmen",
     images: [{ url: "/images/og-home.jpg", width: 1200, height: 630 }],
     locale: "tr_TR",
@@ -26,10 +26,10 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "Büşra Öğretmen",
-  url: "https://busraogretmen.com",
+  url: "https://ogretmenbusra.com",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://busraogretmen.com/materyaller?search={search_term_string}",
+    target: "https://ogretmenbusra.com/materyaller?search={search_term_string}",
     "query-input": "required name=search_term_string",
   },
 };

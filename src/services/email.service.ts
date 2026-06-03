@@ -24,7 +24,7 @@ export const EmailService = {
     `;
 
         return this.send({
-            to: "admin@busraogretmen.com", // Kendi yönetici e-posta adresiniz
+            to: "admin@ogretmenbusra.com", // Kendi yönetici e-posta adresiniz
             replyTo: data.email,
             subject: `İletişim Formu: ${data.subject}`,
             text: content,

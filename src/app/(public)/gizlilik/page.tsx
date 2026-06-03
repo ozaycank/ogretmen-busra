@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "Gizlilik Politikası | Büşra Öğretmen",
     description: "Kişisel verilerinizin nasıl korunduğunu öğrenin.",
     type: "website",
-    url: "https://busraogretmen.com/gizlilik",
+    url: "https://ogretmenbusra.com/gizlilik",
   }
 };
 
@@ -40,16 +40,16 @@ export default function PrivacyPolicyPage() {
     "@graph": [
       {
         "@type": "WebPage",
-        "@id": "https://busraogretmen.com/gizlilik",
-        "url": "https://busraogretmen.com/gizlilik",
+        "@id": "https://ogretmenbusra.com/gizlilik",
+        "url": "https://ogretmenbusra.com/gizlilik",
         "name": "Gizlilik Politikası | Büşra Öğretmen",
         "dateModified": new Date("2026-06-01").toISOString(),
       },
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://busraogretmen.com" },
-          { "@type": "ListItem", "position": 2, "name": "Gizlilik Politikası", "item": "https://busraogretmen.com/gizlilik" }
+          { "@type": "ListItem", "position": 1, "name": "Ana Sayfa", "item": "https://ogretmenbusra.com" },
+          { "@type": "ListItem", "position": 2, "name": "Gizlilik Politikası", "item": "https://ogretmenbusra.com/gizlilik" }
         ]
       }
     ]
@@ -116,13 +116,13 @@ export default function PrivacyPolicyPage() {
                   Büşra Öğretmen Eğitim Platformu ("Platform", "Biz"), öğretmenlerin, öğrencilerin ve velilerin ücretsiz eğitim materyallerine erişebildiği ve içerik paylaşabildiği bir sistemdir. Gizliliğinize değer veriyoruz ve kişisel verilerinizi 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") ve Avrupa Birliği Genel Veri Koruma Tüzüğü ("GDPR") standartlarına uygun olarak işliyoruz.
                 </p>
                 <p>
-                  Bu Gizlilik Politikası, platformumuzu (busraogretmen.com) ziyaret ettiğinizde, üye olduğunuzda veya materyal yüklediğinizde kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklamaktadır.
+                  Bu Gizlilik Politikası, platformumuzu (ogretmenbusra.com) ziyaret ettiğinizde, üye olduğunuzda veya materyal yüklediğinizde kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklamaktadır.
                 </p>
               </PolicySection>
 
               <PolicySection id="veri-sorumlusu" title="2. Veri Sorumlusu">
                 <p>
-                  KVKK uyarınca "Veri Sorumlusu" sıfatıyla Büşra Öğretmen platformu yönetimi, kişisel verilerinizi bu politikada açıklanan amaçlar doğrultusunda işlemektedir. Bizimle iletişime geçmek için iletişim sayfamızı kullanabilir veya <strong>iletisim@busraogretmen.com</strong> adresine e-posta gönderebilirsiniz.
+                  KVKK uyarınca "Veri Sorumlusu" sıfatıyla Büşra Öğretmen platformu yönetimi, kişisel verilerinizi bu politikada açıklanan amaçlar doğrultusunda işlemektedir. Bizimle iletişime geçmek için iletişim sayfamızı kullanabilir veya <strong>iletisim@ogretmenbusra.com</strong> adresine e-posta gönderebilirsiniz.
                 </p>
               </PolicySection>
 
@@ -202,7 +202,7 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-4 inline-block print:border-slate-300">
                   <p className="font-bold text-slate-900 m-0">E-posta:</p>
-                  <a href="mailto:iletisim@busraogretmen.com" className="text-sky-600 font-bold m-0 hover:underline">iletisim@busraogretmen.com</a>
+                  <a href="mailto:iletisim@ogretmenbusra.com" className="text-sky-600 font-bold m-0 hover:underline">iletisim@ogretmenbusra.com</a>
                 </div>
               </PolicySection>
 

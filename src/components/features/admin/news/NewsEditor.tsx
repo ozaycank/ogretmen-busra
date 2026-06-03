@@ -101,7 +101,7 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
               <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-xl">
                 <p className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Google Arama Önizlemesi</p>
                 <div className="text-[20px] text-[#1a0dab] hover:underline cursor-pointer truncate">{formData.seoTitle || formData.title || "Başlık"}</div>
-                <div className="text-[14px] text-[#006621] truncate">busraogretmen.com/haberler/{formData.slug || "url"}</div>
+                <div className="text-[14px] text-[#006621] truncate">ogretmenbusra.com/haberler/{formData.slug || "url"}</div>
                 <div className="text-[14px] text-[#545454] mt-1 line-clamp-2">{formData.seoDescription || formData.content.substring(0, 150) || "Açıklama girilmedi."}</div>
               </div>
             </div>

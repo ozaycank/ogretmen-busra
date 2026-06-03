@@ -62,7 +62,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
     "author": [{
         "@type": "Person",
         "name": "Büşra Öğretmen Editör Ekibi",
-        "url": "https://busraogretmen.com/hakkimizda"
+        "url": "https://ogretmenbusra.com/hakkimizda"
     }]
   };
 

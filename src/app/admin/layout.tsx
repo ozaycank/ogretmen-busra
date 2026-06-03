@@ -12,7 +12,7 @@ async function getMockSession() {
     user: {
       id: "admin-1",
       name: "Büşra Öğretmen",
-      email: "admin@busraogretmen.com",
+      email: "admin@ogretmenbusra.com",
       role: Role.ADMIN, // veya Role.MODERATOR
     }
   };

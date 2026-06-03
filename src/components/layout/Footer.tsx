@@ -98,7 +98,7 @@ export default async function Footer() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 mt-12 pt-6 border-t border-slate-800/50">
-          <p>&copy; {new Date().getFullYear()} busraogretmen.com. Tüm hakları saklıdır.</p>
+          <p>&copy; {new Date().getFullYear()} ogretmenbusra.com. Tüm hakları saklıdır.</p>
           <p className="mt-2 md:mt-0 font-medium">Developed with ❤️ for Education</p>
         </div>
       </div>

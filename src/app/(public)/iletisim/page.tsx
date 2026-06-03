@@ -41,7 +41,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-bold text-slate-900">E-posta</h3>
                   <p className="text-slate-500 text-sm mb-1">Tüm sorularınız ve destek için:</p>
-                  <a href="mailto:iletisim@busraogretmen.com" className="text-sky-600 font-bold hover:underline">iletisim@busraogretmen.com</a>
+                  <a href="mailto:iletisim@ogretmenbusra.com" className="text-sky-600 font-bold hover:underline">iletisim@ogretmenbusra.com</a>
                 </div>
               </div>
 

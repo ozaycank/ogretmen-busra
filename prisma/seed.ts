@@ -11,10 +11,10 @@ async function main() {
     console.log("Kullanıcılar kontrol ediliyor...");
     const hash = await bcrypt.hash("GuvenliSifre123!", 12);
     await prisma.user.upsert({
-        where: { email: "admin@busraogretmen.com" },
+        where: { email: "admin@ogretmenbusra.com" },
         update: {},
         create: {
-            email: "admin@busraogretmen.com",
+            email: "admin@ogretmenbusra.com",
             name: "Sistem Yöneticisi",
             passwordHash: hash,
             role: Role.ADMIN,
