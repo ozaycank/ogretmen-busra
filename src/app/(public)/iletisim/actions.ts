@@ -1,8 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
-import { ContactSchema } from "@/schemas/contact.schema";
-import { EmailService } from "@/services/email.service";
+import { ContactSchema } from "@/modules/contact/schemas/contact.schema";
+import { EmailService } from "@/modules/admin/services/email.service";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { logger } from "@/infrastructure/logger";

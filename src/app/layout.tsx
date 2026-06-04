@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 // YENİ EKLENEN: Cookie Provider importu
-import { CookieProvider } from "@/providers/CookieProvider";
+import { CookieProvider } from "@/shared/providers/CookieProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 

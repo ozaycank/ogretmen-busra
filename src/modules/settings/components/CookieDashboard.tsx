@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCookieConsent } from "@/providers/CookieProvider";
+import { useCookieConsent } from "@/shared/providers/CookieProvider";
 import Switch from "@/components/ui/Switch";
 import { ShieldAlert, Activity, Settings, Megaphone, CheckCircle2 } from "lucide-react";
 

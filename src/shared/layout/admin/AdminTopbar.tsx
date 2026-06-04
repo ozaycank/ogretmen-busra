@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { useAdminLayout } from "@/providers/AdminLayoutProvider";
+import { useAdminLayout } from "@/shared/providers/AdminLayoutProvider";
 import { Menu, Bell, Search, ChevronRight } from "lucide-react";
 
 export default function AdminTopbar({ userName }: { userName: string }) {

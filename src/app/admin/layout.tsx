@@ -1,7 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
-import { AdminLayoutProvider } from "@/providers/AdminLayoutProvider";
+import { AdminLayoutProvider } from "@/shared/providers/AdminLayoutProvider";
 import AdminSidebar from "@/components/layout/admin/AdminSidebar";
 import AdminTopbar from "@/components/layout/admin/AdminTopbar";
 

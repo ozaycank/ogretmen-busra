@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAdminLayout } from "@/providers/AdminLayoutProvider";
+import { useAdminLayout } from "@/shared/providers/AdminLayoutProvider";
 import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper, ShieldCheck } from "lucide-react";
 import { Role } from "@prisma/client";
 
