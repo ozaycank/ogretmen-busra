@@ -1,5 +1,5 @@
 import { prisma } from "@/infrastructure/database/prisma";
-import MaterialCard from "@/components/features/MaterialCard";
+import MaterialCard from "@/modules/materials/components/MaterialCard";
 import { FileStatus } from "@prisma/client"; 
 
 export default async function LatestMaterials() {
