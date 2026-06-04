@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { ChevronRight, Calendar, Eye, Clock, Share2 } from "lucide-react";
 import NewsCard from "@/components/features/news/NewsCard";
 import SkeletonCard from "@/components/ui/Skeleton";

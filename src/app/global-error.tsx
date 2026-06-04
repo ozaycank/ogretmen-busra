@@ -1,7 +1,7 @@
 "use client"; // Hata sınırları (Error Boundaries) her zaman istemci bileşeni olmalıdır
 
 import React, { useEffect } from "react";
-import { logErrorToMonitoring } from "@/lib/monitoring";
+import { logErrorToMonitoring } from "@/infrastructure/monitoring/monitoring";
 import { AlertTriangle, RefreshCcw, Home, LifeBuoy } from "lucide-react";
 
 export default function GlobalError({

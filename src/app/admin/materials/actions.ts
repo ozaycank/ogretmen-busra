@@ -1,10 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus, AuditAction, Role } from "@prisma/client";
 import { headers } from "next/headers";
-import { logger } from "@/lib/logger";
+import { logger } from "@/infrastructure/logger";
 
 // Mock Session (Gerçek Auth entegrasyonunda değiştirilecek)
 async function getAdminSession() {

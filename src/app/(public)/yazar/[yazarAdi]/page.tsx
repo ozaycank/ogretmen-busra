@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FileText, Download, Eye, Award, ArrowLeft, Calendar } from "lucide-react";

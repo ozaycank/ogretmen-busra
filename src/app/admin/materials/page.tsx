@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import MaterialTable from "@/components/features/admin/materials/MaterialTable";
 import { FileStatus } from "@prisma/client";
 

@@ -5,7 +5,7 @@ import { ContactSchema } from "@/schemas/contact.schema";
 import { EmailService } from "@/services/email.service";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { logger } from "@/lib/logger";
+import { logger } from "@/infrastructure/logger";
 
 // State Tipleri (React 19 useActionState uyumlu)
 export type ActionState = {

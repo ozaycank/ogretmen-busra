@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus, AuditAction, Role } from "@prisma/client";
 import { cookies, headers } from "next/headers";
 import { jwtVerify } from "jose";
-import { logger } from "@/lib/logger";
+import { logger } from "@/infrastructure/logger";
 
 async function getSession() {
     const cookieStore = await cookies();

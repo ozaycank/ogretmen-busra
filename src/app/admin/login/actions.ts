@@ -1,10 +1,10 @@
 "use server";
 
 import { headers } from "next/headers";
-import { LoginSchema } from "@/schemas/auth.schema";
+import { LoginSchema } from "@/modules/auth/schemas/auth.schema";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { logger } from "@/lib/logger";
+import { logger } from "@/infrastructure/logger";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Role, FileStatus, GradeLevel, ContentCategory } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { prisma } from "../src/lib/db/prisma";
+import { prisma } from "../src/infrastructure/database/prisma";
 import crypto from "crypto";
 
 async function main() {

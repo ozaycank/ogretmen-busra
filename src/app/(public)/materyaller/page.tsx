@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus, GradeLevel, ContentCategory, Prisma } from "@prisma/client";
 import MaterialCard from "@/components/features/MaterialCard";
 import FilterSidebar from "@/components/features/materials/FilterSidebar";

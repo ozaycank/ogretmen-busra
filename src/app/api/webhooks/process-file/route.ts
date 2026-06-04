@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
-import { ValidationService } from "@/services/validation.service";
-import { UploadService } from "@/services/upload.service";
-import { AuthService } from "@/services/auth.service";
+import { prisma } from "@/infrastructure/database/prisma";
+import { ValidationService } from "@/modules/moderation/services/validation.service";
+import { UploadService } from "@/modules/upload/services/upload.service";
+import { AuthService } from "@/modules/auth/services/auth.service";
 
 // QStash Webhook Doğrulaması (Sadece Upstash bu rotayı tetikleyebilir)
 // import { verifySignature } from "@upstash/qstash/nextjs"; 

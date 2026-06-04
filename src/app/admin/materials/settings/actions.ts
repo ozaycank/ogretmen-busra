@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db/prisma";
-import { ModerationSettingsSchema, ModerationSettingsData, defaultModerationSettings } from "@/schemas/settings.schema";
+import { prisma } from "@/infrastructure/database/prisma";
+import { ModerationSettingsSchema, ModerationSettingsData, defaultModerationSettings } from "@/modules/settings/schemas/settings.schema";
 import { AuditAction, Role } from "@prisma/client";
 import { cookies, headers } from "next/headers";
 import { jwtVerify } from "jose";
-import { logger } from "@/lib/logger";
+import { logger } from "@/infrastructure/logger";
 
 const SETTING_KEY = "MODERATION_RULES";
 

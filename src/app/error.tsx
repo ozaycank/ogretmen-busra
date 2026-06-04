@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { logErrorToMonitoring } from "@/lib/monitoring";
+import { logErrorToMonitoring } from "@/infrastructure/monitoring/monitoring";
 import { AlertCircle, RefreshCcw } from "lucide-react";
 
 export default function AppErrorBoundary({

@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { Role } from "@prisma/client";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";

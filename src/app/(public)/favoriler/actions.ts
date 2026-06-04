@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus } from "@prisma/client";
 
 export async function getFavoriteMaterials(ids: string[]) {

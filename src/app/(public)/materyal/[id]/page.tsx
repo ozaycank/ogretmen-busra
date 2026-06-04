@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus } from "@prisma/client";
 import { ChevronRight, Download, Eye, FileText, User, Calendar, Share2, FileArchive, FileImage } from "lucide-react";
 import MaterialCard from "@/components/features/MaterialCard";

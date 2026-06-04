@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import Link from "next/link";
 import { Plus, Edit3, Trash2, Globe, Clock } from "lucide-react";
 import NewsEditor from "@/components/features/admin/news/NewsEditor";

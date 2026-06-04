@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useFavorites } from "@/hooks/useFavorites";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 import { getFavoriteMaterials } from "@/app/(public)/favoriler/actions";
 import MaterialCard from "@/components/features/MaterialCard";
 import SkeletonCard from "@/components/ui/Skeleton";

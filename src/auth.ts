@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { authConfig } from "./config/auth.config";
+import { authConfig } from "./modules/auth/config/auth.config";
 import { z } from "zod";
-import { AuthService } from "./services/auth.service";
+import { AuthService } from "./modules/auth/services/auth.service";
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { AnalyticsService } from "@/services/analytics.service";
-import { logger } from "@/lib/logger";
+import { AnalyticsService } from "@/modules/analytics/services/analytics.service";
+import { logger } from "@/infrastructure/logger";
 
 // Sadece yetkili cron servislerinin tetikleyebilmesi için güvenlik
 export async function GET(req: Request) {

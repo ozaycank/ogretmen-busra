@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { prisma } from "@/lib/db/prisma";
+import { prisma } from "@/infrastructure/database/prisma";
 import NewsFilter from "@/components/features/news/NewsFilter";
 import NewsCard from "@/components/features/news/NewsCard";
 import Pagination from "@/components/features/materials/Pagination";

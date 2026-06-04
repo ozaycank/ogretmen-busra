@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db/prisma";
-import { NewsSchema, NewsFormData } from "@/schemas/news.schema";
+import { prisma } from "@/infrastructure/database/prisma";
+import { NewsSchema, NewsFormData } from "@/modules/news/schemas/news.schema";
 import { Role } from "@prisma/client";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
