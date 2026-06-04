@@ -82,6 +82,7 @@ export default async function Footer() {
               <li><Link href="/iletisim" className="hover:text-sky-400 transition-colors">İletişim</Link></li>
               <li><Link href="/materyaller" className="hover:text-sky-400 transition-colors">Tüm Materyaller</Link></li>
               <li><Link href="/haberler" className="hover:text-sky-400 transition-colors">Eğitim Haberleri</Link></li>
+              <li><Link href="/sss" className="hover:text-sky-400 transition-colors">S.S.S.</Link></li>
             </ul>
           </div>
 
@@ -92,6 +93,7 @@ export default async function Footer() {
               <li><Link href="/gizlilik" className="hover:text-sky-400 transition-colors">Gizlilik Politikası</Link></li>
               <li><Link href="/kvkk-aydinlatma-metni" className="hover:text-sky-400 transition-colors">KVKK</Link></li>
               <li><Link href="/cerezler" className="hover:text-sky-400 transition-colors">Çerez Tercihleri</Link></li>
+              <li><Link href="/telif" className="hover:text-sky-400 transition-colors">Telif Hakkı Uyarısı</Link></li>
             </ul>
           </div>
 
