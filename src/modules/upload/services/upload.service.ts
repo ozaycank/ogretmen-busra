@@ -1,5 +1,5 @@
 import { prisma } from "@/infrastructure/database/prisma";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FileStatus, GradeLevel, ContentCategory } from "@prisma/client";
 import crypto from "crypto";
@@ -28,6 +28,7 @@ interface InitializeUploadDTO {
 }
 
 export class UploadService {
+    // 1. METOD: Presigned URL Üretme
     static async generatePresignedUrl(data: InitializeUploadDTO) {
         const fileId = crypto.randomUUID();
         const extension = data.fileName.split('.').pop()?.toLowerCase() || "unknown";
@@ -68,15 +69,24 @@ export class UploadService {
         return { signedUrl, materialId: fileId, fileKey: safeFileKey };
     }
 
-    // YENİ: İstemci yüklemeyi bitirdiğinde çalışacak onaylama servisi
+    // 2. METOD: Dosya Geri Alma (İmha)
+    static async rollbackFile(fileKey: string) {
+        try {
+            const command = new DeleteObjectCommand({
+                Bucket: process.env.R2_BUCKET_NAME,
+                Key: fileKey,
+            });
+            await s3Client.send(command);
+        } catch (error) {
+            console.error(`[ROLLBACK_ERROR] Dosya silinemedi: ${fileKey}`, error);
+        }
+    }
+
+    // 3. METOD: Yükleme Onaylama
     static async confirmUploadSuccess(materialId: string) {
-        // İleride burada QStash webhook'u tetiklenebilir (PROCESSING'e çeker)
-        // Şimdilik test ve moderasyon için doğrudan kuyruğa (UPLOAD_PENDING kalarak onay ekranına düşmesini) sağlıyoruz.
         return prisma.material.update({
             where: { id: materialId },
             data: {
-                // Gerçek mimaride burada status: "PROCESSING" olur ve webhook tetiklenir
-                // Sistemde henüz Worker aktif olmadığı için direkt "UPLOAD_PENDING" kalarak Admin onayına düşmesini sağlıyoruz.
                 scanResult: "Sistem tarafından güvenlik kuyruğuna alındı."
             }
         });

@@ -2,13 +2,14 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus, GradeLevel, ContentCategory, Prisma } from "@prisma/client";
-import MaterialCard from "@/components/features/MaterialCard";
-import FilterSidebar from "@/components/features/materials/FilterSidebar";
-import MaterialSearch from "@/components/features/materials/MaterialSearch";
-import Pagination from "@/components/features/materials/Pagination";
-import SkeletonCard from "@/components/ui/Skeleton";
+import MaterialCard from "@/modules/materials/components/MaterialCard";
+
+import FilterSidebar from "@/modules/materials/components/FilterSidebar";
+import MaterialSearch from "@/modules/materials/components/MaterialSearch";
+import Pagination from "@/modules/materials/components/Pagination";
+import SkeletonCard from "@/shared/ui/Skeleton";
 import { SearchX } from "lucide-react";
-import FavoritesLink from "@/components/features/favorites/FavoritesLink";
+import FavoritesLink from "@/modules/favorites/components/FavoritesLink";
 
 // Dinamik SEO Metadata
 export async function generateMetadata({ searchParams }: { searchParams: Promise<any> }): Promise<Metadata> {

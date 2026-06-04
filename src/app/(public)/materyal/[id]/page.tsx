@@ -5,8 +5,9 @@ import Link from "next/link";
 import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus } from "@prisma/client";
 import { ChevronRight, Download, Eye, FileText, User, Calendar, Share2, FileArchive, FileImage } from "lucide-react";
-import MaterialCard from "@/components/features/MaterialCard";
-import SkeletonCard from "@/components/ui/Skeleton";
+import MaterialCard from "@/modules/materials/components/MaterialCard";
+
+import SkeletonCard from "@/shared/ui/Skeleton";
 
 // 1. Dinamik SEO (OpenGraph) Metadata Üretimi
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

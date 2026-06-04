@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
-import MaterialTable from "@/components/features/admin/materials/MaterialTable";
+import MaterialTable from "@/modules/materials/components/MaterialTable";
 import { FileStatus } from "@prisma/client";
 
 export const metadata: Metadata = {

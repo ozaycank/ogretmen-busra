@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
 import Link from "next/link";
 import { Plus, Edit3, Trash2, Globe, Clock } from "lucide-react";
-import NewsEditor from "@/components/features/admin/news/NewsEditor";
+import NewsEditor from "@/modules/news/components/NewsEditor";
 
 export const metadata: Metadata = {
   title: "Haber Yönetimi | Admin",

@@ -7,8 +7,7 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import Link from "next/link";
 import { ChevronLeft, ShieldAlert, User, Database, Activity, AlertTriangle, ShieldCheck } from "lucide-react";
-import ModerationPanel from "@/components/features/admin/moderation/ModerationPanel";
-
+import ModerationPanel from "@/modules/moderation/components/ModerationPanel";
 export const metadata: Metadata = {
   title: "Materyal İnceleme | Trust & Safety",
   robots: { index: false, follow: false },

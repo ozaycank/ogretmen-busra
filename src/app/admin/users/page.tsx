@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
-import StaffTable from "@/components/features/admin/users/StaffTable";
+import StaffTable from "@/modules/admin/components/StaffTable";
 
 export const metadata: Metadata = {
   title: "Sistem Personeli | Admin",

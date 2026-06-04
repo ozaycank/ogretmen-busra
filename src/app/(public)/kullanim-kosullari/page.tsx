@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, FileCheck, Scale, Printer } from "lucide-react";
-import PrintButton from "@/components/ui/PrintButton";
+import PrintButton from "@/shared/ui/PrintButton";
 
 export const metadata: Metadata = {
   title: "Kullanım Koşulları | Büşra Öğretmen",

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UploadService } from "@/modules/upload/services/upload.service";
-import { withErrorHandler } from "@/infrastructure/api/api-wrapper";
-import { logger } from "@/infrastructure/logger";
+import { withErrorHandler } from "@/shared/utils/api-wrapper"; import { logger } from "@/infrastructure/logger";
 import { z } from "zod";
 import crypto from "crypto";
 

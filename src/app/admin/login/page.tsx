@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import LoginForm from "@/components/features/auth/LoginForm";
+import LoginForm from "@/modules/auth/components/LoginForm";
 
 export const metadata: Metadata = {
   title: "Yönetici Girişi | Büşra Öğretmen",

@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import UploadForm from "@/components/features/upload/UploadForm";
+import UploadForm from "@/modules/upload/components/UploadForm";
 import { ShieldCheck, Zap, Heart } from "lucide-react";
 
 export const metadata: Metadata = {

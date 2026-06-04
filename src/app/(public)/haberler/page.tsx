@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
-import NewsFilter from "@/components/features/news/NewsFilter";
-import NewsCard from "@/components/features/news/NewsCard";
-import Pagination from "@/components/features/materials/Pagination";
-import SkeletonCard from "@/components/ui/Skeleton";
+import NewsFilter from "@/modules/news/components/NewsFilter";
+
+import NewsCard from "@/modules/news/components/NewsCard";
+
+import Pagination from "@/modules/materials/components/Pagination";
+import SkeletonCard from "@/shared/ui/Skeleton";
 import { Newspaper } from "lucide-react";
 import { Prisma } from "@prisma/client";
 

@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
-import PendingQueueTable, { EnrichedPendingMaterial } from "@/components/features/admin/moderation/PendingQueueTable";
+import PendingQueueTable, { EnrichedPendingMaterial } from "@/modules/moderation/components/PendingQueueTable";
 import { Layers, ShieldCheck, ShieldAlert, Clock } from "lucide-react";
 
 export const metadata: Metadata = {

@@ -1,5 +1,5 @@
 import React from "react";
-import SkeletonCard from "@/components/ui/Skeleton";
+import SkeletonCard from "@/shared/ui/Skeleton";
 
 export default function NewsLoading() {
   return (

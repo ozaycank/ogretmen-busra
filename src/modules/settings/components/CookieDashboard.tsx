@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useCookieConsent } from "@/shared/providers/CookieProvider";
-import Switch from "@/components/ui/Switch";
+import Switch from "@/shared/ui/Switch";
 import { ShieldAlert, Activity, Settings, Megaphone, CheckCircle2 } from "lucide-react";
 
 export default function CookieDashboard() {

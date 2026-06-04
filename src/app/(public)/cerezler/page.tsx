@@ -2,8 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Cookie } from "lucide-react";
-import CookieDashboard from "@/components/features/cookies/CookieDashboard";
-
+import CookieDashboard from "@/modules/settings/components/CookieDashboard";
 export const metadata: Metadata = {
   title: "Çerez Tercihleri | Büşra Öğretmen",
   description: "Büşra Öğretmen platformunda kullanılan çerezleri ve izleme teknolojilerini yönetin.",

@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import HeroSection from "@/components/features/home/HeroSection";
-import CategorySection from "@/components/features/home/CategorySection";
-import LatestMaterials from "@/components/features/home/LatestMaterials";
-import NewsSection from "@/components/features/home/NewsSection";
-import SkeletonCard from "@/components/ui/Skeleton";
+import HeroSection from "@/modules/home/components/HeroSection";
+import CategorySection from "@/modules/home/components/CategorySection";
+import LatestMaterials from "@/modules/home/components/LatestMaterials";
+import NewsSection from "@/modules/news/components/NewsSection";
+import SkeletonCard from "@/shared/ui/Skeleton";
 
 // 1. Gelişmiş SEO ve OpenGraph Meta Verileri
 export const metadata: Metadata = {

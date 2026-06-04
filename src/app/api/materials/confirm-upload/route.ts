@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UploadService } from "@/modules/upload/services/upload.service";
-import { withErrorHandler } from "@/infrastructure/api/api-wrapper";
-import { z } from "zod";
+import { withErrorHandler } from "@/shared/utils/api-wrapper"; import { z } from "zod";
 
 const ConfirmSchema = z.object({
     materialId: z.string().uuid()

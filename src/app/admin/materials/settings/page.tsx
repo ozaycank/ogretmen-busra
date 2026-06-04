@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import { getModerationSettings } from "@/app/admin/materials/settings/actions";
-import SettingsPanel from "@/components/features/admin/settings/SettingsPanel";
+import SettingsPanel from "@/modules/settings/components/SettingsPanel";
 import { ShieldCheck } from "lucide-react";
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { errorResponse } from "./api-response";
-import { logger } from "../logger";
+import { logger } from "@/infrastructure/logger";
 import * as Sentry from "@sentry/nextjs";
 
 export const withErrorHandler = (

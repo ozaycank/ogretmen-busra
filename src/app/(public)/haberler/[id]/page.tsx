@@ -4,9 +4,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/infrastructure/database/prisma";
 import { ChevronRight, Calendar, Eye, Clock, Share2 } from "lucide-react";
-import NewsCard from "@/components/features/news/NewsCard";
-import SkeletonCard from "@/components/ui/Skeleton";
+import NewsCard from "@/modules/news/components/NewsCard";
 
+import SkeletonCard from "@/shared/ui/Skeleton";
 // Okuma süresi hesaplama fonksiyonu
 function calculateReadingTime(text: string): number {
   const words = text.trim().split(/\s+/).length;

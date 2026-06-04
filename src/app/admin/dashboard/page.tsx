@@ -1,8 +1,8 @@
 import React, { Suspense } from "react";
 import { Metadata } from "next";
-import StatCards from "@/components/features/admin/dashboard/StatCards";
-import PendingQueue from "@/components/features/admin/dashboard/PendingQueue";
-import AnalyticsChartWrapper from "@/components/features/admin/dashboard/AnalyticsChartWrapper";
+import StatCards from "@/modules/analytics/components/StatCards";
+import PendingQueue from "@/modules/moderation/components/PendingQueue";
+import AnalyticsChartWrapper from "@/modules/analytics/components/AnalyticsChartWrapper";
 import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {

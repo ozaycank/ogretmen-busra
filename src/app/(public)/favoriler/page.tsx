@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import { getFavoriteMaterials } from "@/app/(public)/favoriler/actions";
-import MaterialCard from "@/components/features/MaterialCard";
-import SkeletonCard from "@/components/ui/Skeleton";
+import MaterialCard from "@/modules/materials/components/MaterialCard";
+import SkeletonCard from "@/shared/ui/Skeleton";
 import { Heart, Search, BookmarkX, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
