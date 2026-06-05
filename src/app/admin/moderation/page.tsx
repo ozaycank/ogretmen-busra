@@ -1,31 +1,21 @@
 import React from "react";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ShieldCheck, ShieldAlert, Activity, AlertOctagon, History, ChevronRight } from "lucide-react";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Güvenlik & Moderasyon Merkezi | Trust & Safety",
   robots: { index: false, follow: false },
 };
 
+
+
 async function verifyTrustAndSafetyAccess() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (!token) redirect("/admin/login");
-  
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-    if (payload.role !== Role.ADMIN && payload.role !== Role.MODERATOR) redirect("/");
-    return payload;
-  } catch (error) {
-    redirect("/admin/login");
-  }
+  const session = await auth();
+  if (!session?.user) redirect("/admin/login");
 }
 
 export default async function ModerationHubPage() {

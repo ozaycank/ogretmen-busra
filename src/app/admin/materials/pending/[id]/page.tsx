@@ -2,53 +2,39 @@ import React from "react";
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import Link from "next/link";
-import { ChevronLeft, ShieldAlert, User, Database, Activity, AlertTriangle, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ShieldAlert, User, Database, AlertTriangle, ShieldCheck } from "lucide-react";
 import ModerationPanel from "@/modules/moderation/components/ModerationPanel";
+import { auth } from "@/auth";
+
 export const metadata: Metadata = {
   title: "Materyal İnceleme | Trust & Safety",
   robots: { index: false, follow: false },
 };
 
-async function getSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (!token) return null;
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-    return payload;
-  } catch (error) { return null; }
-}
-
 export default async function ModerationDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session || (session.role !== Role.ADMIN && session.role !== Role.MODERATOR)) redirect("/admin/login");
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "MODERATOR")) {
+    redirect("/admin/login");
+  }
 
   const { id } = await params;
 
-  // 1. Ana Materyali Çek
   const material = await prisma.material.findUnique({ where: { id } });
   if (!material) notFound();
 
-  // 2. Yükleyici (Uploader) Risk Analizi
   const [uploaderTotalUploads, uploaderRejected] = await Promise.all([
     prisma.material.count({ where: { ipHash: material.ipHash } }),
     prisma.material.count({ where: { ipHash: material.ipHash, status: "REJECTED" } }),
   ]);
 
-  // Risk Skoru Hesaplama (Basit Algoritma)
   let riskScore = 10;
   if (material.fileType === "exe" || material.fileType === "zip") riskScore += 40;
   if (uploaderRejected > 0) riskScore += 30;
-  if (uploaderTotalUploads > 20) riskScore -= 10; // Güvenilir kullanıcı
+  if (uploaderTotalUploads > 20) riskScore -= 10;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      
       <div className="flex items-center gap-4">
         <Link href="/admin/materials" className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
           <ChevronLeft size={20} className="text-slate-600" />
@@ -60,11 +46,8 @@ export default async function ModerationDetailPage({ params }: { params: Promise
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        
-        {/* SOL: Bilgiler ve Analiz (4 Sütun) */}
         <div className="xl:col-span-4 space-y-6">
           
-          {/* Materyal Özeti */}
           <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Database size={16}/> Dosya Meta Verisi</h2>
             <div className="space-y-4 text-sm">
@@ -79,7 +62,6 @@ export default async function ModerationDetailPage({ params }: { params: Promise
             </div>
           </section>
 
-          {/* Yükleyici Bilgisi (Guest/IP Bazlı) */}
           <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"><User size={16}/> Yükleyici Profili</h2>
             <div className="space-y-4 text-sm">
@@ -97,7 +79,6 @@ export default async function ModerationDetailPage({ params }: { params: Promise
             </div>
           </section>
 
-          {/* Güvenlik Analizi */}
           <section className={`border rounded-3xl p-6 shadow-sm ${riskScore > 50 ? 'bg-rose-50 border-rose-200' : 'bg-white border-slate-200'}`}>
             <h2 className={`text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2 ${riskScore > 50 ? 'text-rose-600' : 'text-slate-400'}`}>
               <ShieldAlert size={16}/> Güvenlik ve Risk Analizi
@@ -115,7 +96,6 @@ export default async function ModerationDetailPage({ params }: { params: Promise
 
         </div>
 
-        {/* SAĞ: Önizleme ve Aksiyonlar (8 Sütun) */}
         <div className="xl:col-span-8">
           <ModerationPanel 
             materialId={material.id} 

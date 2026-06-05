@@ -3,21 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/infrastructure/database/prisma";
 import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import { auth } from "@/auth";
 
-// SADECE ADMIN'LER BU İŞLEMLERİ YAPABİLİR
+// SADECE ADMIN'LER BU İŞLEMLERİ YAPABİLİR (Super Admin koruması)
 async function verifySuperAdmin() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin_session")?.value;
-    if (!token) throw new Error("Yetkisiz");
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-
-    if (payload.role !== Role.ADMIN) throw new Error("Bu işlem için Süper Admin yetkisi gereklidir.");
-    return payload;
+    const session = await auth();
+    if (!session?.user || session.user.role !== "ADMIN") {
+        throw new Error("Bu işlem için Süper Admin yetkisi gereklidir.");
+    }
+    return session.user;
 }
 
 export async function createStaffMember(data: FormData) {
@@ -65,7 +60,7 @@ export async function unlockUserAccount(userId: string) {
 export async function deleteStaffMember(userId: string) {
     try {
         const admin = await verifySuperAdmin();
-        if (admin.sub === userId) throw new Error("Kendi hesabınızı silemezsiniz.");
+        if (admin.id === userId) throw new Error("Kendi hesabınızı silemezsiniz.");
 
         await prisma.user.delete({ where: { id: userId } });
         revalidatePath("/admin/users");

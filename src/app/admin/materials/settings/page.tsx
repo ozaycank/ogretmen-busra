@@ -1,12 +1,10 @@
 import React from "react";
 import { Metadata } from "next";
-import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import { getModerationSettings } from "@/app/admin/materials/settings/actions";
 import SettingsPanel from "@/modules/settings/components/SettingsPanel";
 import { ShieldCheck } from "lucide-react";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Konfigürasyon | Trust & Safety",
@@ -14,31 +12,18 @@ export const metadata: Metadata = {
 };
 
 async function verifySuperAdmin() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (!token) redirect("/admin/login");
-  
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-    
-    // Moderatörler bu sayfaya giremez, sadece sistem mimarları (Admin) girebilir.
-    if (payload.role !== Role.ADMIN) redirect("/admin/dashboard");
-    return payload;
-  } catch (error) {
-    redirect("/admin/login");
-  }
+  const session = await auth();
+  if (!session?.user) redirect("/admin/login");
+  if (session.user.role !== "ADMIN") redirect("/admin/dashboard");
 }
 
 export default async function SettingsPage() {
   await verifySuperAdmin();
 
-  // Veritabanından dinamik ayarları çek (Eğer yoksa varsayılanları getirir)
   const settings = await getModerationSettings();
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Sistem Konfigürasyonu</h1>
@@ -48,9 +33,7 @@ export default async function SettingsPage() {
           <ShieldCheck size={18}/> Tam Yetki Doğrulandı
         </div>
       </div>
-
       <SettingsPanel initialSettings={settings} />
-
     </div>
   );
 }

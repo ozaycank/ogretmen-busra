@@ -3,21 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/infrastructure/database/prisma";
 import { ModerationSettingsSchema, ModerationSettingsData, defaultModerationSettings } from "@/modules/settings/schemas/settings.schema";
-import { AuditAction, Role } from "@prisma/client";
-import { cookies, headers } from "next/headers";
-import { jwtVerify } from "jose";
+import { AuditAction } from "@prisma/client";
+import { headers } from "next/headers";
 import { logger } from "@/infrastructure/logger";
+import { auth } from "@/auth";
 
 const SETTING_KEY = "MODERATION_RULES";
 
 async function verifySuperAdmin() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin_session")?.value;
-    if (!token) throw new Error("Yetkisiz");
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-    if (payload.role !== Role.ADMIN) throw new Error("Bu sayfaya sadece Süper Admin erişebilir.");
-    return payload;
+    const session = await auth();
+    if (!session?.user || session.user.role !== "ADMIN") {
+        throw new Error("Bu işlem için Süper Admin yetkisi gereklidir.");
+    }
+    return session.user;
 }
 
 export async function getModerationSettings(): Promise<ModerationSettingsData> {
@@ -40,8 +38,8 @@ export async function updateModerationSettings(data: ModerationSettingsData, rea
         await prisma.$transaction(async (tx) => {
             await tx.systemSetting.upsert({
                 where: { key: SETTING_KEY },
-                update: { value: validated, updatedBy: admin.sub },
-                create: { key: SETTING_KEY, value: validated, updatedBy: admin.sub },
+                update: { value: validated, updatedBy: admin.id },
+                create: { key: SETTING_KEY, value: validated, updatedBy: admin.id },
             });
 
             await tx.settingHistory.create({
@@ -49,7 +47,7 @@ export async function updateModerationSettings(data: ModerationSettingsData, rea
                     settingKey: SETTING_KEY,
                     oldValue: currentSetting?.value || {},
                     newValue: validated,
-                    changedBy: admin.sub as string,
+                    changedBy: admin.id as string,
                     reason: reason || "Genel ayar güncellemesi",
                 }
             });
@@ -57,7 +55,7 @@ export async function updateModerationSettings(data: ModerationSettingsData, rea
             // Audit Log
             await tx.auditLog.create({
                 data: {
-                    userId: admin.sub as string,
+                    userId: admin.id as string,
                     action: AuditAction.MATERIAL_APPROVED, // Şemada SETTING_CHANGED olmadığı için geçici kullanıyoruz
                     ipAddress: ip,
                     details: `Moderasyon ayarları güncellendi. ${reason ? `Sebep: ${reason}` : ''}`
@@ -65,7 +63,7 @@ export async function updateModerationSettings(data: ModerationSettingsData, rea
             });
         });
 
-        logger.info({ adminId: admin.sub }, "Moderasyon ayarları güncellendi.");
+        logger.info({ adminId: admin.id }, "Moderasyon ayarları güncellendi.");
         revalidatePath("/admin/materials/settings");
         return { success: true };
     } catch (error: any) {

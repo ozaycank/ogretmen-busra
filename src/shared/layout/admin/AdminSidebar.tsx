@@ -4,10 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminLayout } from "@/shared/providers/AdminLayoutProvider";
-import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper, ShieldCheck } from "lucide-react";
+// DÜZELTME: Server ikonu eklendi
+import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper, ShieldCheck, Server } from "lucide-react";
 import { Role } from "@prisma/client";
 
-// ÇÖZÜM: Tüm Materyaller kısmına 'exact: true' parametresi eklendi
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: [Role.ADMIN, Role.MODERATOR] },
   { name: "Onay Bekleyenler", href: "/admin/materials/pending", icon: CheckSquare, roles: [Role.ADMIN, Role.MODERATOR] },
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { name: "Kullanıcı Yönetimi", href: "/admin/users", icon: Users, roles: [Role.ADMIN] },
   { name: "Sistem Ayarları", href: "/admin/materials/settings", icon: Settings, roles: [Role.ADMIN] },
   { name: "Güvenlik & Moderasyon", href: "/admin/moderation", icon: ShieldCheck, roles: [Role.ADMIN, Role.MODERATOR] },
+  { name: "Sistem Altyapısı", href: "/admin/system", icon: Server, roles: [Role.ADMIN] },
 ];
 
 export default function AdminSidebar({ userRole }: { userRole: Role }) {
@@ -26,7 +27,6 @@ export default function AdminSidebar({ userRole }: { userRole: Role }) {
 
   return (
     <>
-      {/* Mobil Karartma Arka Planı (Overlay) */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
@@ -34,7 +34,6 @@ export default function AdminSidebar({ userRole }: { userRole: Role }) {
         />
       )}
 
-      {/* Sidebar Container */}
       <aside className={`
         fixed top-0 left-0 z-50 h-screen w-72 bg-[#0f172a] text-slate-300 transition-transform duration-300 ease-in-out flex flex-col
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
@@ -54,8 +53,6 @@ export default function AdminSidebar({ userRole }: { userRole: Role }) {
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
           <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Ana Menü</p>
           {authorizedNavItems.map((item) => {
-            
-            // ÇÖZÜM UYGULAMASI: Eğer exact true ise sadece tam eşleşmeye bak, değilse alt klasörlere de izin ver.
             const isActive = item.exact 
               ? pathname === item.href 
               : pathname === item.href || pathname.startsWith(`${item.href}/`);

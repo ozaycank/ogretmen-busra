@@ -3,28 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/infrastructure/database/prisma";
-import { FileStatus, AuditAction, Role } from "@prisma/client";
-import { cookies, headers } from "next/headers";
-import { jwtVerify } from "jose";
+import { FileStatus, AuditAction } from "@prisma/client";
+import { headers } from "next/headers";
 import { logger } from "@/infrastructure/logger";
-
-async function getSession() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("admin_session")?.value;
-    if (!token) return null;
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-        const { payload } = await jwtVerify(token, secret);
-        return payload;
-    } catch (error) {
-        return null;
-    }
-}
+import { auth } from "@/auth";
 
 export async function moderateMaterial(materialId: string, action: "APPROVE" | "REJECT", reason?: string) {
     try {
-        const session = await getSession();
-        if (!session || (session.role !== Role.ADMIN && session.role !== Role.MODERATOR)) {
+        const session = await auth();
+        // Sadece Admin ve Moderator yapabilir
+        if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "MODERATOR")) {
             throw new Error("Yetkisiz işlem.");
         }
 
@@ -38,22 +26,21 @@ export async function moderateMaterial(materialId: string, action: "APPROVE" | "
             where: { id: materialId },
             data: {
                 status: newStatus,
-                scanResult: reason ? `Moderasyon Notu: ${reason}` : null // Basit not sistemi için scanResult alanını kullanıyoruz
+                scanResult: reason ? `Moderasyon Notu: ${reason}` : null
             }
         });
 
         await prisma.auditLog.create({
             data: {
-                userId: session.sub,
+                userId: session.user.id,
                 action: auditAction,
                 ipAddress: ip,
                 details: `Materyal ID: ${materialId} | İşlem: ${action} | Sebep: ${reason || "Belirtilmedi"} | R2 Key: ${updated.fileKey}`
             }
         });
 
-        logger.info({ adminId: session.sub, materialId, action }, "Moderasyon işlemi tamamlandı");
+        logger.info({ adminId: session.user.id, materialId, action }, "Moderasyon işlemi tamamlandı");
 
-        // İşlem bitince listeye geri dön
     } catch (error) {
         logger.error({ err: error, materialId }, "Moderasyon başarısız");
         throw new Error("İşlem gerçekleştirilemedi.");

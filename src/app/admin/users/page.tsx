@@ -2,37 +2,24 @@ import React from "react";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
 import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import StaffTable from "@/modules/admin/components/StaffTable";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Sistem Personeli | Admin",
   robots: { index: false, follow: false },
 };
 
-// Sadece Süper Adminler bu sayfayı görebilir. Moderatörler giremez.
 async function verifySuperAdmin() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (!token) redirect("/admin/login");
-  
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-    
-    if (payload.role !== Role.ADMIN) redirect("/admin/dashboard");
-    return payload;
-  } catch (error) {
-    redirect("/admin/login");
-  }
+  const session = await auth();
+  if (!session?.user) redirect("/admin/login");
+  if (session.user.role !== "ADMIN") redirect("/admin/dashboard");
 }
 
 export default async function AdminUsersPage() {
   await verifySuperAdmin();
 
-  // Sistemdeki sadece ADMIN ve MODERATOR'leri çek (Dış kullanıcı mantığımız yok ama güvenlik için filtre)
   const staffList = await prisma.user.findMany({
     where: { role: { in: [Role.ADMIN, Role.MODERATOR] } },
     orderBy: { createdAt: "asc" }

@@ -1,12 +1,10 @@
 import React from "react";
 import { Metadata } from "next";
 import { prisma } from "@/infrastructure/database/prisma";
-import { Role } from "@prisma/client";
-import { cookies } from "next/headers";
-import { jwtVerify } from "jose";
-import { redirect } from "next/navigation";
 import PendingQueueTable, { EnrichedPendingMaterial } from "@/modules/moderation/components/PendingQueueTable";
 import { Layers, ShieldCheck, ShieldAlert, Clock } from "lucide-react";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Onay Kuyruğu | Trust & Safety",
@@ -14,14 +12,10 @@ export const metadata: Metadata = {
 };
 
 async function verifyAccess() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("admin_session")?.value;
-  if (!token) redirect("/admin/login");
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET || "default_secure_super_secret_key_change_me");
-    const { payload } = await jwtVerify(token, secret);
-    if (payload.role !== Role.ADMIN && payload.role !== Role.MODERATOR) redirect("/");
-  } catch (error) { redirect("/admin/login"); }
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "MODERATOR")) {
+    redirect("/admin/login");
+  }
 }
 
 const PAGE_SIZE = 20;
@@ -32,7 +26,6 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
   const q = params.q || "";
   const cursor = params.cursor;
 
-  // 1. Üst Kısım İstatistikleri (Parallel Fetching)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -42,7 +35,6 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
     prisma.auditLog.count({ where: { action: "MATERIAL_REJECTED", createdAt: { gte: today } } }),
   ]);
 
-  // 2. Cursor Pagination ile Materyalleri Çek
   const rawMaterials = await prisma.material.findMany({
     where: {
       status: "UPLOAD_PENDING",
@@ -54,9 +46,9 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
         ]
       })
     },
-    take: PAGE_SIZE + 1, // Cursor tespiti için 1 fazla çekiyoruz
+    take: PAGE_SIZE + 1, 
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    orderBy: { createdAt: "asc" } // En çok bekleyen en üstte
+    orderBy: { createdAt: "asc" } 
   });
 
   let nextCursor: string | null = null;
@@ -65,8 +57,6 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
     nextCursor = nextItem!.id;
   }
 
-  // 3. N+1 Problemini Çözen Toplu Risk Analizi Algoritması
-  // Tüm bu 20 materyalin IP adreslerini tek seferde alıp geçmişteki red durumlarını tek sorguyla çekiyoruz.
   const ipHashes = [...new Set(rawMaterials.map(m => m.ipHash))];
   const badIpsResult = await prisma.material.groupBy({
     by: ["ipHash"],
@@ -74,17 +64,15 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
     _count: true,
   });
   
-  // IP'ye göre red sayısını (map) olarak hızlı okuma için ayarla
   const badIpMap = new Map<string, number>();
   badIpsResult.forEach(item => badIpMap.set(item.ipHash, item._count));
 
-  // Veriyi Client için zenginleştir (Enrichment)
   const enrichedMaterials: EnrichedPendingMaterial[] = rawMaterials.map(m => {
     let riskScore = 10;
     if (m.fileType === "zip" || m.fileType === "docx") riskScore += 20;
     
     const rejectCount = badIpMap.get(m.ipHash) || 0;
-    if (rejectCount > 0) riskScore += (rejectCount * 25); // Geçmişte ne kadar reddedildiyse risk o kadar artar
+    if (rejectCount > 0) riskScore += (rejectCount * 25); 
     
     let priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "LOW";
     if (riskScore >= 70) priority = "CRITICAL";
@@ -96,8 +84,6 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
 
   return (
     <div className="space-y-8">
-      
-      {/* Dashboard Summary Kartları */}
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Onay Kuyruğu (Moderasyon)</h1>
         <p className="text-slate-500 mt-1">Yüklenen materyalleri inceleyin, güvenliği sağlayın ve yayına alın.</p>
@@ -122,9 +108,7 @@ export default async function PendingQueuePage({ searchParams }: { searchParams:
         </div>
       </div>
 
-      {/* Ana Kuyruk Tablosu */}
       <PendingQueueTable materials={enrichedMaterials} nextCursor={nextCursor} />
-
     </div>
   );
 }
