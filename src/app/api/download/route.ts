@@ -1,35 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/infrastructure/database/prisma";
-import { logger } from "@/infrastructure/logger";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { FileStatus } from "@prisma/client";
+
+// Cloudflare R2 - S3 İstemcisi Başlatma
+const s3Client = new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
+    },
+    forcePathStyle: true,
+});
 
 export async function GET(req: NextRequest) {
-    const searchParams = req.nextUrl.searchParams;
-    const id = searchParams.get("id");
-
-    if (!id) {
-        return NextResponse.json({ error: "Materyal ID gereklidir." }, { status: 400 });
-    }
-
     try {
-        const material = await prisma.material.findUnique({
-            where: { id }
-        });
+        const { searchParams } = req.nextUrl;
+        const id = searchParams.get("id");
 
-        if (!material || !material.fileUrl) {
-            return NextResponse.json({ error: "Materyal veya dosya bulunamadı." }, { status: 404 });
+        if (!id) {
+            return NextResponse.json({ error: "Geçersiz veya eksik materyal ID'si." }, { status: 400 });
         }
 
-        // İndirme sayısını artır (Asenkron)
-        await prisma.material.update({
-            where: { id },
+        // 1. Materyali bul ve veritabanında "İndirilme (Download)" sayısını 1 artır
+        const material = await prisma.material.update({
+            where: { id, status: FileStatus.APPROVED },
             data: { downloadCount: { increment: 1 } }
         });
 
-        // Kullanıcıyı R2/Cloudflare üzerindeki gerçek dosyaya yönlendir
-        return NextResponse.redirect(material.fileUrl);
+        if (!material) {
+            return NextResponse.json({ error: "Materyal bulunamadı veya onaylanmamış." }, { status: 404 });
+        }
+
+        // 2. AWS S3 API üzerinden güvenli ve süreli (15 Dakika) bir indirme linki üret
+        // Bu yöntem, ISS'ler tarafından engellenen r2.dev domainini bypass eder.
+        const command = new GetObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: material.fileKey,
+            // KRİTİK: Tarayıcıya dosyayı açmamasını, doğrudan "Farklı Kaydet" penceresini tetiklemesini söyler.
+            ResponseContentDisposition: `attachment; filename="${encodeURIComponent(material.originalName)}"`,
+        });
+
+        const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+
+        // 3. Kullanıcıyı oluşturulan bu şifreli ve güvenli bağlantıya yönlendir (307)
+        return NextResponse.redirect(signedUrl);
 
     } catch (error) {
-        logger.error({ err: error, materialId: id }, "İndirme işlemi sırasında hata oluştu.");
-        return NextResponse.json({ error: "Sunucu hatası." }, { status: 500 });
+        console.error("[DOWNLOAD_ERROR]", error);
+        return NextResponse.json({ error: "Dosya indirilirken sunucu tarafında bir hata oluştu." }, { status: 500 });
     }
 }

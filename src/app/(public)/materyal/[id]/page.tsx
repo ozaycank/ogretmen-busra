@@ -4,10 +4,12 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus } from "@prisma/client";
-import { ChevronRight, Download, Eye, FileText, User, Calendar, Share2, FileArchive, FileImage } from "lucide-react";
+import { ChevronRight, Download, Eye, FileText, User, Calendar, FileArchive, FileImage } from "lucide-react";
 import MaterialCard from "@/modules/materials/components/MaterialCard";
-
 import SkeletonCard from "@/shared/ui/Skeleton";
+
+// YENİ EKLENEN IMPORT
+import ShareButton from "@/shared/ui/ShareButton"; 
 
 // 1. Dinamik SEO (OpenGraph) Metadata Üretimi
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -49,13 +51,13 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 
   if (!material) notFound();
 
-  // Arka planda görüntülenme sayısını artır (Next.js request'ini bloklamaması için await etmiyoruz)
+  // Arka planda görüntülenme sayısını artır
   prisma.material.update({
     where: { id },
     data: { viewCount: { increment: 1 } }
-  }).catch(() => {}); // Olası hataları sessizce yut
+  }).catch(() => {});
 
-  // JSON-LD Schema (Google Eğitim Materyali Zengin Sonuçları için)
+  // JSON-LD Schema
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LearningResource",
@@ -114,30 +116,30 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 
               <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 py-4 border-y border-slate-100">
                 <div className="flex items-center gap-2">
-  <User size={18} className="text-slate-400"/> 
-  <Link 
-    href={`/yazar/${encodeURIComponent(material.authorName)}`} 
-    className="font-semibold text-sky-600 hover:text-sky-700 hover:underline transition-colors"
-  >
-    {material.authorName}
-  </Link>
-</div>
+                  <User size={18} className="text-slate-400"/> 
+                  <Link 
+                    href={`/yazar/${encodeURIComponent(material.authorName)}`} 
+                    className="font-semibold text-sky-600 hover:text-sky-700 hover:underline transition-colors"
+                  >
+                    {material.authorName}
+                  </Link>
+                </div>
                 <div className="flex items-center gap-2"><Calendar size={18} className="text-slate-400"/> {new Date(material.createdAt).toLocaleDateString("tr-TR")}</div>
                 <div className="flex items-center gap-2"><Eye size={18} className="text-slate-400"/> {material.viewCount + 1} Görüntülenme</div>
                 <div className="flex items-center gap-2"><Download size={18} className="text-slate-400"/> {material.downloadCount} İndirme</div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                {/* İNDİRME İŞLEMİ: Güvenli Proxy Rotasına Yönlendirilir */}
                 <a 
                   href={`/api/download?id=${material.id}`}
                   className="flex-1 flex justify-center items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <Download size={24} /> Dosyayı İndir
                 </a>
-                <button className="flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 px-6 py-4 rounded-2xl font-bold transition-colors border border-slate-200">
-                  <Share2 size={20} /> Paylaş
-                </button>
+                
+                {/* YENİ EKLENEN İNTERAKTİF PAYLAŞ BUTONU */}
+                <ShareButton title={material.title} />
+
               </div>
             </div>
           </div>
@@ -160,16 +162,16 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 }
 
 // -------------------------------------------------------------
-// İLGİLİ MATERYALLER BİLEŞENİ (Sadece Sunucuda Çalışır)
+// İLGİLİ MATERYALLER BİLEŞENİ
 // -------------------------------------------------------------
 async function RelatedMaterials({ category, currentId }: { category: string, currentId: string }) {
   const related = await prisma.material.findMany({
     where: { 
       status: FileStatus.APPROVED,
       category: category as any,
-      id: { not: currentId } // Mevcut materyali gizle
+      id: { not: currentId }
     },
-    orderBy: { downloadCount: "desc" }, // En çok indirilenleri öner
+    orderBy: { downloadCount: "desc" },
     take: 3,
   });
 
