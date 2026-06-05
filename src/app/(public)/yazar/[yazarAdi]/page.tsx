@@ -107,7 +107,7 @@ export default async function YazarProfilePage({ params }: YazarPageProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {materials.map((item) => (
-            <Link key={item.id} href={`/materyaller/${item.id}`} className="group bg-white border border-slate-200 rounded-3xl p-5 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-500/5 transition-all flex flex-col h-full">
+            <Link key={item.id} href={`/materyal/${item.id}`} className="group bg-white border border-slate-200 rounded-3xl p-5 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-500/5 transition-all flex flex-col h-full">
               
               <div className="flex justify-between items-start mb-4">
                 <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
