@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Search, Menu, X, ChevronDown, GraduationCap, FileText, Newspaper } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// Şemadaki GradeLevel yapısının kullanıcı dostu Türkçe karşılıkları
 const GRADE_LEVELS = [
   { key: "OKUL_ONCESI", label: "Okul Öncesi" },
   { key: "SINIF_1", label: "1. Sınıf" },
@@ -15,10 +14,6 @@ const GRADE_LEVELS = [
   { key: "GENEL", label: "Genel" },
 ];
 
-/**
- * Arama modülünü izole ederek, her tuş vuruşunda tüm Navbar'ın 
- * yeniden render edilmesini (re-render) engelliyoruz.
- */
 const SearchBar = ({ className = "" }: { className?: string }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -51,17 +46,11 @@ const SearchBar = ({ className = "" }: { className?: string }) => {
   );
 };
 
-/**
- * Sınıflar Dropdown modülü.
- * setTimeout hack'i yerine, focus dışarı çıktığında menüyü kapatan
- * güvenli e.relatedTarget yöntemi kullanılmıştır.
- */
 const ClassesDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleBlur = (e: React.FocusEvent) => {
-    // Eğer focus, dropdown container'ının dışına çıkarsa menüyü kapat
     if (!containerRef.current?.contains(e.relatedTarget as Node)) {
       setIsOpen(false);
     }
@@ -110,7 +99,6 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           
-          {/* Logo Bölümü */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2" aria-label="Ana Sayfaya Dön">
               <span className="text-2xl font-black tracking-tight text-[#e11d48]">Büşra</span>
@@ -118,10 +106,8 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Arama Çubuğu (Masaüstü) - İzole Edildi */}
           <SearchBar className="hidden md:flex flex-1 max-w-md mx-8" />
 
-          {/* Menü Linkleri (Masaüstü) */}
           <div className="hidden md:flex items-center gap-6">
             <Link href="/" className="text-gray-600 hover:text-[#0284c7] font-medium text-sm transition-colors">
               Ana Sayfa
@@ -141,7 +127,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobil Menü Tetikleyici Buton */}
           <div className="flex md:hidden">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
@@ -155,7 +140,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobil Menü İçeriği */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white px-4 pt-2 pb-6 space-y-3 shadow-inner">
           <SearchBar className="w-full my-2" />

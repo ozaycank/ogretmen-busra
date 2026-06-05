@@ -9,25 +9,37 @@ export default function MaterialSearch() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  // URL'deki mevcut aramayı başlangıç değeri olarak al
-  const initialSearch = searchParams.get("search") || "";
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  // URL'deki mevcut aramayı canlı olarak takip et
+  const currentUrlSearch = searchParams.get("search") || "";
+  
+  // Yerel input state'i
+  const [searchTerm, setSearchTerm] = useState(currentUrlSearch);
 
-  // Debounce (Geciktirme) Mantığı
+  // 1. SENKRONİZASYON: Dışarıdan (örn: Navbar'dan) arama yapılıp URL değişirse, input'un içini de hemen o kelimeyle doldur.
+  useEffect(() => {
+    setSearchTerm(currentUrlSearch);
+  }, [currentUrlSearch]);
+
+  // 2. KULLANICI ETKİLEŞİMİ: Sadece bu inputa yazı yazıldığında URL'i (500ms gecikmeli) güncelle.
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      // KRİTİK ÇÖZÜM: Eğer inputtaki değer ile URL'deki değer zaten aynıysa, 
+      // router.push işlemini iptal et. Bu sayede Navbar araması ezilmez.
+      if (searchTerm === currentUrlSearch) return;
+
       const params = new URLSearchParams(searchParams.toString());
       if (searchTerm) {
         params.set("search", searchTerm);
-        params.set("page", "1"); // Arama değişirse 1. sayfaya dön
+        params.set("page", "1"); // Yeni arama yapıldığında her zaman 1. sayfaya dön
       } else {
         params.delete("search");
       }
+      
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    }, 500); // 500ms bekle
+    }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, pathname, router, searchParams]);
+  }, [searchTerm, currentUrlSearch, pathname, router, searchParams]);
 
   return (
     <div className="relative w-full max-w-2xl">
