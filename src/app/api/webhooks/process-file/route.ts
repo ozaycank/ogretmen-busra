@@ -4,10 +4,11 @@ import { ValidationService } from "@/modules/moderation/services/validation.serv
 import { UploadService } from "@/modules/upload/services/upload.service";
 import { AuthService } from "@/modules/auth/services/auth.service";
 
-// QStash Webhook Doğrulaması (Sadece Upstash bu rotayı tetikleyebilir)
-// import { verifySignature } from "@upstash/qstash/nextjs"; 
+// QStash Webhook Doğrulaması (App Router uyumlu)
+import { verifySignatureAppRouter } from "@upstash/qstash/nextjs";
 
-export async function POST(req: NextRequest) {
+// İşlem fonksiyonunu verifySignatureAppRouter ile sarmalayarak rotayı kilitliyoruz.
+export const POST = verifySignatureAppRouter(async (req: NextRequest) => {
     const { materialId, fileKey, publicUrl } = await req.json();
 
     try {
@@ -53,4 +54,4 @@ export async function POST(req: NextRequest) {
         // Queue'ya işlemin bittiğini (tekrar denemesine gerek olmadığını) bildir 200 dön
         return NextResponse.json({ success: false, reason: error.message }, { status: 200 });
     }
-}
+});

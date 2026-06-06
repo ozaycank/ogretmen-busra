@@ -22,6 +22,18 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  images: {
+    // Enables modern, smaller image formats for faster loading
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        // Strictly bound to your custom domain. Do NOT use wildcards here.
+        hostname: "r2.ogretmenbusra.com",
+        pathname: "/**",
+      }
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

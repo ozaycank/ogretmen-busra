@@ -2,14 +2,19 @@ import React, { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
+import crypto from "crypto";
+import { Redis } from "@upstash/redis";
 import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus } from "@prisma/client";
 import { ChevronRight, Download, Eye, FileText, User, Calendar, FileArchive, FileImage } from "lucide-react";
 import MaterialCard from "@/modules/materials/components/MaterialCard";
 import SkeletonCard from "@/shared/ui/Skeleton";
-
-// YENİ EKLENEN IMPORT
+import MaterialPreview from "@/modules/materials/components/MaterialPreview";
 import ShareButton from "@/shared/ui/ShareButton"; 
+
+// Initialize Upstash Redis instance
+const redis = Redis.fromEnv();
 
 // 1. Dinamik SEO (OpenGraph) Metadata Üretimi
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -51,11 +56,27 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 
   if (!material) notFound();
 
-  // Arka planda görüntülenme sayısını artır
-  prisma.material.update({
-    where: { id },
-    data: { viewCount: { increment: 1 } }
-  }).catch(() => {});
+  // Arka planda güvenli ve rate-limit korumalı görüntülenme sayısını artır
+  try {
+    const headerList = await headers();
+    const ip = headerList.get("x-forwarded-for") || "127.0.0.1";
+    // KVKK/GDPR uyumluluğu için IP adresini hashliyoruz
+    const ipHash = crypto.createHash("sha256").update(ip).digest("hex");
+    const viewKey = `view:material:${id}:${ipHash}`;
+
+    // Redis üzerinde 1 saatlik (3600 sn) kilit oluştur (Sadece ilk istekte başarılı olur)
+    const isNewView = await redis.set(viewKey, "1", { ex: 3600, nx: true });
+
+    if (isNewView) {
+      prisma.material.update({
+        where: { id },
+        data: { viewCount: { increment: 1 } }
+      }).catch((e) => console.error("[DB_ERROR] Görüntülenme artırılamadı:", e));
+    }
+  } catch (redisError) {
+    // Redis çökerse DB'yi korumak adına sessizce fail veriyoruz, sayfa yüklenmeye devam ediyor
+    console.error("[REDIS_ERROR] View cache erişim hatası:", redisError);
+  }
 
   // JSON-LD Schema
   const jsonLd = {
@@ -90,15 +111,14 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
           <div className="absolute top-0 right-0 w-64 h-64 bg-sky-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/4 pointer-events-none" />
           
           <div className="relative z-10 flex flex-col md:flex-row gap-10 items-start">
-            
-            {/* Sol: Dosya Önizleme / İkon Alanı */}
-            <div className="w-full md:w-64 flex-shrink-0">
-              <div className="aspect-square bg-slate-50 border border-slate-100 rounded-3xl flex flex-col items-center justify-center p-6 text-center">
-                {getFileIcon(material.fileType)}
-                <span className="mt-4 text-sm font-bold text-slate-400 uppercase tracking-widest">{material.fileType} Dosyası</span>
-              </div>
+            {/* Sol: Materyal Önizlemesi */}
+            <div className="w-full md:w-72 flex-shrink-0">
+              <MaterialPreview 
+                fileUrl={material.fileUrl} 
+                fileType={material.fileType} 
+                title={material.title} 
+              />
             </div>
-
             {/* Sağ: İçerik ve Butonlar */}
             <div className="flex-1 space-y-6">
               <div className="flex flex-wrap gap-2">
@@ -125,7 +145,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                   </Link>
                 </div>
                 <div className="flex items-center gap-2"><Calendar size={18} className="text-slate-400"/> {new Date(material.createdAt).toLocaleDateString("tr-TR")}</div>
-                <div className="flex items-center gap-2"><Eye size={18} className="text-slate-400"/> {material.viewCount + 1} Görüntülenme</div>
+                <div className="flex items-center gap-2"><Eye size={18} className="text-slate-400"/> {material.viewCount} Görüntülenme</div>
                 <div className="flex items-center gap-2"><Download size={18} className="text-slate-400"/> {material.downloadCount} İndirme</div>
               </div>
 
@@ -137,7 +157,7 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
                   <Download size={24} /> Dosyayı İndir
                 </a>
                 
-                {/* YENİ EKLENEN İNTERAKTİF PAYLAŞ BUTONU */}
+                {/* İNTERAKTİF PAYLAŞ BUTONU */}
                 <ShareButton title={material.title} />
 
               </div>
