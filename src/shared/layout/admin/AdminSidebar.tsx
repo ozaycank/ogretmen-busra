@@ -4,19 +4,23 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminLayout } from "@/shared/providers/AdminLayoutProvider";
-// DÜZELTME: Server ikonu eklendi
 import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper, ShieldCheck, Server } from "lucide-react";
-import { Role } from "@prisma/client";
+import type { Role } from "@prisma/client";
+
+const ROLES = {
+  ADMIN: "ADMIN" as Role,
+  MODERATOR: "MODERATOR" as Role
+};
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: [Role.ADMIN, Role.MODERATOR] },
-  { name: "Onay Bekleyenler", href: "/admin/materials/pending", icon: CheckSquare, roles: [Role.ADMIN, Role.MODERATOR] },
-  { name: "Tüm Materyaller", href: "/admin/materials", icon: Files, roles: [Role.ADMIN, Role.MODERATOR], exact: true },
-  { name: "Haber Yönetimi", href: "/admin/news", icon: Newspaper, roles: [Role.ADMIN, Role.MODERATOR] }, 
-  { name: "Kullanıcı Yönetimi", href: "/admin/users", icon: Users, roles: [Role.ADMIN] },
-  { name: "Sistem Ayarları", href: "/admin/materials/settings", icon: Settings, roles: [Role.ADMIN] },
-  { name: "Güvenlik & Moderasyon", href: "/admin/moderation", icon: ShieldCheck, roles: [Role.ADMIN, Role.MODERATOR] },
-  { name: "Sistem Altyapısı", href: "/admin/system", icon: Server, roles: [Role.ADMIN] },
+  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, roles: [ROLES.ADMIN, ROLES.MODERATOR] },
+  { name: "Onay Bekleyenler", href: "/admin/materials/pending", icon: CheckSquare, roles: [ROLES.ADMIN, ROLES.MODERATOR] },
+  { name: "Tüm Materyaller", href: "/admin/materials", icon: Files, roles: [ROLES.ADMIN, ROLES.MODERATOR], exact: true },
+  { name: "Haber Yönetimi", href: "/admin/news", icon: Newspaper, roles: [ROLES.ADMIN, ROLES.MODERATOR] }, 
+  { name: "Kullanıcı Yönetimi", href: "/admin/users", icon: Users, roles: [ROLES.ADMIN] },
+  { name: "Sistem Ayarları", href: "/admin/materials/settings", icon: Settings, roles: [ROLES.ADMIN] },
+  { name: "Güvenlik & Moderasyon", href: "/admin/moderation", icon: ShieldCheck, roles: [ROLES.ADMIN, ROLES.MODERATOR] },
+  { name: "Sistem Altyapısı", href: "/admin/system", icon: Server, roles: [ROLES.ADMIN] },
 ];
 
 export default function AdminSidebar({ userRole }: { userRole: Role }) {
