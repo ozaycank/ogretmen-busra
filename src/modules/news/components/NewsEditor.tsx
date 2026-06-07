@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { saveNews } from "@/app/admin/news/actions";
+import { saveNews } from "@/app/admin/(protected)/news/actions";
 import { Save, Eye, LayoutTemplate, Settings, CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 

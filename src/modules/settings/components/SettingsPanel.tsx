@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { updateModerationSettings } from "@/app/admin/materials/settings/actions";
+import { updateModerationSettings } from "@/app/admin/(protected)/materials/settings/actions";
 import { ModerationSettingsData } from "@/modules/settings/schemas/settings.schema";
 import { Settings, Shield, Activity, Clock, AlertTriangle, Save, Loader2 } from "lucide-react";
 

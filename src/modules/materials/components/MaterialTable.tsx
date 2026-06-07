@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { updateMaterialStatus } from "@/app/admin/materials/actions";
+import { updateMaterialStatus } from "@/app/admin/(protected)/materials/actions";
 import { Material, FileStatus } from "@prisma/client";
 import { CheckCircle2, XCircle, MoreVertical, Search, Filter, Trash2, Loader2, Download } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";

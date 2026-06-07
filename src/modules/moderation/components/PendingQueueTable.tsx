@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { bulkModerateMaterials } from "@/app/admin/materials/pending/actions";
+import { bulkModerateMaterials } from "@/app/admin/(protected)/materials/pending/actions";
 import { ShieldAlert, ShieldCheck, Clock, Search, Filter, CheckCircle2, XCircle, AlertTriangle, ChevronRight, Loader2 } from "lucide-react";
 import { GradeLevel, ContentCategory } from "@prisma/client";
 

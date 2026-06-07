@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from "react";
 import { User, Role } from "@prisma/client";
-import { createStaffMember, unlockUserAccount, deleteStaffMember } from "@/app/admin/users/actions";
+import { createStaffMember, unlockUserAccount, deleteStaffMember } from "@/app/admin/(protected)/users/actions";
 import { Shield, ShieldAlert, Key, Trash2, Plus, X, Loader2, LockOpen } from "lucide-react";
 
 interface StaffTableProps {

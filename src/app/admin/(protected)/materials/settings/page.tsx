@@ -1,7 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getModerationSettings } from "@/app/admin/materials/settings/actions";
+import { getModerationSettings } from "@/app/admin/(protected)/materials/settings/actions";
 import SettingsPanel from "@/modules/settings/components/SettingsPanel";
 import { ShieldCheck } from "lucide-react";
 import { auth } from "@/auth";

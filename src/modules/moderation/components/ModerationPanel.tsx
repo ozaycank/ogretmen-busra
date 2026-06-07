@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { moderateMaterial } from "@/app/admin/materials/pending/[id]/actions";
+import { moderateMaterial } from "@/app/admin/(protected)/materials/pending/[id]/actions";
 import { CheckCircle2, XCircle, AlertTriangle, FileText, Download, Loader2 } from "lucide-react";
 
 interface ModerationPanelProps {
