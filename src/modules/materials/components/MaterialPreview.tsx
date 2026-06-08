@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useState , useEffect } from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { FileText, FileArchive, Loader2, AlertCircle } from "lucide-react";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// PDF.js worker ayarı (CDN üzerinden çekilir, sunucuyu yormaz)
 const setupPdfWorker = () => {
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 };
@@ -26,11 +24,16 @@ export default function MaterialPreview({ fileUrl, fileType, title }: MaterialPr
   const isImage = ["jpg", "jpeg", "png", "webp"].includes(type);
   const isPdf = type === "pdf";
 
-useEffect(() => {
+  //Yasaklı r2.dev domainini güvenli custom domain'e otomatik çevirir
+  const safeFileUrl = fileUrl.replace(
+    /https:\/\/pub-[a-zA-Z0-9]+\.r2\.dev/g, 
+    "https://r2.ogretmenbusra.com"
+  );
+
+  useEffect(() => {
     setupPdfWorker();
-}, []);
+  }, []);
     
-  // Yükleme durumu arayüzü
   const LoadingFallback = (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 text-slate-400">
       <Loader2 className="animate-spin mb-2" size={32} />
@@ -38,14 +41,12 @@ useEffect(() => {
     </div>
   );
 
-  // GÖRSEL (IMAGE) ÖNİZLEMESİ
   if (isImage) {
     return (
       <div className="relative w-full aspect-[3/4] md:aspect-square bg-slate-50 rounded-3xl overflow-hidden border border-slate-200 shadow-inner group">
         {loading && LoadingFallback}
-        {/* next/image yerine native img kullanarak proxy'yi bypass ediyoruz */}
         <img
-          src={fileUrl}
+          src={safeFileUrl}
           alt={title}
           onLoad={() => setLoading(false)}
           onError={() => { setLoading(false); setError(true); }}
@@ -61,13 +62,12 @@ useEffect(() => {
     );
   }
 
-  // PDF İLK SAYFA ÖNİZLEMESİ
   if (isPdf) {
     return (
       <div className="relative w-full aspect-[1/1.4] bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-md flex items-start justify-center">
         {loading && LoadingFallback}
         <Document
-          file={fileUrl}
+          file={safeFileUrl} // 🚀 DÜZELTİLDİ
           loading={null}
           onLoadSuccess={() => setLoading(false)}
           onLoadError={() => { setLoading(false); setError(true); }}
@@ -77,7 +77,7 @@ useEffect(() => {
             pageNumber={1} 
             renderTextLayer={false} 
             renderAnnotationLayer={false}
-            width={300} // Mobil ve masaüstü uyumu için sabit başlangıç genişliği
+            width={300}
             className="shadow-sm"
           />
         </Document>
@@ -87,8 +87,6 @@ useEffect(() => {
             <span className="text-xs font-bold text-center px-4">Önizleme oluşturulamadı</span>
           </div>
         )}
-        
-        {/* PDF Etiketi */}
         <div className="absolute bottom-4 right-4 bg-rose-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-lg text-xs font-bold tracking-wider shadow-sm z-10">
           PDF
         </div>
@@ -96,7 +94,6 @@ useEffect(() => {
     );
   }
 
-  // DESTEKLENMEYEN DOSYALAR İÇİN (DOCX, ZIP, RAR) STANDART İKON
   return (
     <div className="relative w-full aspect-square bg-slate-50 border border-slate-200 rounded-3xl flex flex-col items-center justify-center p-6 text-center shadow-inner">
       {type === "zip" || type === "rar" ? (

@@ -1,10 +1,9 @@
 import { prisma } from "@/infrastructure/database/prisma";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FileStatus, GradeLevel, ContentCategory } from "@prisma/client";
 import crypto from "crypto";
 
-// R2 Mimarisi
 const s3Client = new S3Client({
     region: "auto",
     endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -28,14 +27,14 @@ interface InitializeUploadDTO {
 }
 
 export class UploadService {
-    // 1. METOD: Presigned URL Üretme
     static async generatePresignedUrl(data: InitializeUploadDTO) {
         const fileId = crypto.randomUUID();
         const extension = data.fileName.split('.').pop()?.toLowerCase() || "unknown";
         const safeFileKey = `uploads/materials/${fileId}.${extension}`;
-        const r2PublicUrl = process.env.R2_PUBLIC_URL || "https://pub-r2.ogretmenbusra.com";
 
-        // DB'ye Taslak Kayıt Ekle (UPLOAD_PENDING)
+        // 🚀 DÜZELTME: Fallback URL custom domain oldu
+        const r2PublicUrl = process.env.R2_PUBLIC_URL || "https://r2.ogretmenbusra.com";
+
         await prisma.material.create({
             data: {
                 id: fileId,
@@ -52,11 +51,10 @@ export class UploadService {
                 mimeType: data.mimeType,
                 status: FileStatus.UPLOAD_PENDING,
                 ipHash: data.ipHash,
-                turnstileToken: crypto.randomUUID(), // Bot koruma atlandı (Opsiyonel olarak gerçeği eklenecek)
+                turnstileToken: crypto.randomUUID(),
             }
         });
 
-        // Presigned URL Üret (5 DK)
         const command = new PutObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
             Key: safeFileKey,
@@ -69,7 +67,23 @@ export class UploadService {
         return { signedUrl, materialId: fileId, fileKey: safeFileKey };
     }
 
-    // 2. METOD: Dosya Geri Alma (İmha)
+    // 🚀 YENİ EKLENEN KORUMA: R2 üzerinde dosyanın gerçekten var olduğunu doğrular
+    static async verifyFileExistsInR2(fileKey: string): Promise<boolean> {
+        try {
+            const command = new HeadObjectCommand({
+                Bucket: process.env.R2_BUCKET_NAME,
+                Key: fileKey,
+            });
+            await s3Client.send(command);
+            return true; // Dosya fiziksel olarak storage'da var
+        } catch (error: any) {
+            if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
+                return false; // Ghost record tespit edildi
+            }
+            throw error;
+        }
+    }
+
     static async rollbackFile(fileKey: string) {
         try {
             const command = new DeleteObjectCommand({
@@ -82,7 +96,6 @@ export class UploadService {
         }
     }
 
-    // 3. METOD: Yükleme Onaylama
     static async confirmUploadSuccess(materialId: string) {
         return prisma.material.update({
             where: { id: materialId },
