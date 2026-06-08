@@ -1,11 +1,11 @@
 import { DefaultSession } from "next-auth";
-import { Role } from "@prisma/client";
+import type { Role } from "@prisma/client"; // SADECE TİP İMPORTU (Edge için güvenli)
 
 declare module "next-auth" {
     interface Session {
         user: {
             id: string;
-            role: Role;
+            role: Role; // Tekrar Role tipine döndürdük
         } & DefaultSession["user"];
     }
 

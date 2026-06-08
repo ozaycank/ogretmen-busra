@@ -4,8 +4,9 @@ import { Role } from "@prisma/client";
 import { AdminLayoutProvider } from "@/shared/providers/AdminLayoutProvider";
 import AdminSidebar from "@/shared/layout/admin/AdminSidebar";
 import AdminTopbar from "@/shared/layout/admin/AdminTopbar";
-// DÜZELTME: Gerçek Auth modülümüzü import ediyoruz
 import { auth } from "@/auth";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
   // 1. Gerçek NextAuth Oturumunu Çek
