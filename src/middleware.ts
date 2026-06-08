@@ -1,10 +1,15 @@
 import NextAuth from "next-auth";
-import { authConfig } from "@/modules/auth/config/auth.config";
 import { NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const { auth } = NextAuth(authConfig);
+// 🚀 EDGE RUNTIME BYPASS: Kendi authConfig dosyanızı İMPORT ETMİYORUZ!
+// Çünkü o dosyanın içindeki Bcrypt veya Prisma, Edge ortamını anında çökertir.
+// Bunun yerine sadece mevcut JWT oturumunu çözebilecek hafif bir Auth nesnesi yaratıyoruz.
+const { auth } = NextAuth({
+    providers: [],
+    secret: process.env.AUTH_SECRET,
+});
 
 // Edge Runtime için Redis İstemcisi
 const getRedisClient = () => {
