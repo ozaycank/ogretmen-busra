@@ -26,7 +26,7 @@ export async function submitContactForm(prevState: ActionState, formData: FormDa
     try {
         // 1. IP ve Rate Limit Kontrolü
         const headerList = await headers();
-        const ip = headerList.get("x-forwarded-for") || "127.0.0.1";
+        const ip = headerList.get("cf-connecting-ip") || headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
         if (ratelimit) {
             const { success } = await ratelimit.limit(`contact_${ip}`);

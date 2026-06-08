@@ -77,10 +77,10 @@ export default function CopyrightPage() {
             <div className="mt-4 p-5 bg-blue-50/50 rounded-xl border border-blue-100">
               <p className="font-medium text-gray-900">Yasal İletişim E-Posta Adresi:</p>
               <a 
-                href="mailto:legal@ogretmenbusra.com" 
+                href="mailto:iletisim@ogretmenbusra.com" 
                 className="text-blue-600 hover:text-blue-700 transition-colors font-medium"
               >
-                legal@ogretmenbusra.com
+                iletisim@ogretmenbusra.com
               </a>
             </div>
           </section>

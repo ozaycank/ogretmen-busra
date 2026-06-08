@@ -54,7 +54,7 @@ export default function GlobalError({
                   <Home size={18} /> Ana Sayfa
                 </a>
                 <a
-                  href="mailto:destek@ogretmenbusra.com"
+                  href="mailto:iletisim@ogretmenbusra.com"
                   className="flex items-center justify-center gap-2 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors focus:ring-4 focus:ring-slate-200 outline-none"
                 >
                   <LifeBuoy size={18} /> Destek
