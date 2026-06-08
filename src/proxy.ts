@@ -2,9 +2,8 @@ import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
-import { authConfig } from "@/modules/auth/config/auth.config"; // DİKKAT: Eklendi!
+import { authConfig } from "@/modules/auth/config/auth.config";
 
-// Edge Runtime için AuthConfig'i mutlaka iletiyoruz ki Session haritalaması yapılsın.
 const { auth } = NextAuth(authConfig);
 
 const redis = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -27,9 +26,12 @@ export default auth(async (req) => {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1";
 
     // -----------------------------
-    // RATE LIMIT (API ve POST Login için)
+    // RATE LIMIT (Admin Login & API postları için. /api/auth HARİÇ)
     // -----------------------------
-    const isProtectedPost = req.method === "POST" && (pathname.startsWith("/api/") || pathname.startsWith("/admin/login"));
+    const isProtectedPost = req.method === "POST" &&
+        !pathname.startsWith("/api/auth") &&
+        (pathname.startsWith("/api/") || pathname.startsWith("/admin/login"));
+
     if (ratelimit && isProtectedPost) {
         const { success } = await ratelimit.limit(`ip:${ip}`);
         if (!success) {
@@ -37,18 +39,12 @@ export default auth(async (req) => {
         }
     }
 
-    // -----------------------------
-    // AUTH DURUMU (Artık role okunabilecek!)
-    // -----------------------------
     const isLoggedIn = !!req.auth?.user;
     const role = req.auth?.user?.role;
 
     const isLoginPage = pathname === "/admin/login";
     const isAdminRoute = pathname.startsWith("/admin");
 
-    // -----------------------------
-    // LOGIN SAYFASI MANTIĞI
-    // -----------------------------
     if (isLoginPage) {
         if (isLoggedIn) {
             return NextResponse.redirect(new URL("/admin/dashboard", req.url));
@@ -56,22 +52,16 @@ export default auth(async (req) => {
         return NextResponse.next();
     }
 
-    // -----------------------------
-    // PUBLIC SAYFALAR (Serbest Geçiş)
-    // -----------------------------
     if (!isAdminRoute) {
         return NextResponse.next();
     }
 
-    // -----------------------------
-    // ADMIN ALANI (KORUMA)
-    // -----------------------------
     if (!isLoggedIn) {
         return NextResponse.redirect(new URL("/admin/login", req.url));
     }
 
     if (role !== "ADMIN" && role !== "MODERATOR") {
-        return NextResponse.redirect(new URL("/", req.url)); // Yetkisizse anasayfaya!
+        return NextResponse.redirect(new URL("/", req.url));
     }
 
     if (pathname.startsWith("/admin/materials/settings") && role !== "ADMIN") {
@@ -82,6 +72,6 @@ export default auth(async (req) => {
 });
 
 export const config = {
-    // Statik assetleri tamamen devreden çıkararak performansı arttırırız
+    // ÇOK KRİTİK: api/auth middleware'e TAKILMAYACAK (Bypass)!
     matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
