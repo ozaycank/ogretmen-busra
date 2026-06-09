@@ -3,8 +3,7 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { FileText, Download, Eye, AlertCircle } from "lucide-react";
 
 export default async function StatCards() {
-  // Optimal Query: 4 farklı sorguyu aynı anda paralel olarak veritabanına gönderir
-  const [materialStats, pendingCount, userCount] = await Promise.all([
+  const [materialStats, pendingCount] = await Promise.all([
     prisma.material.aggregate({
       _count: { id: true },
       _sum: { downloadCount: true, viewCount: true },
@@ -12,8 +11,7 @@ export default async function StatCards() {
     }),
     prisma.material.count({
       where: { status: "UPLOAD_PENDING" }
-    }),
-    prisma.user.count()
+    })
   ]);
 
   const stats = [

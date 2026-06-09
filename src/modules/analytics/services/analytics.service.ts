@@ -1,7 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { prisma } from "@/infrastructure/database/prisma";
 
-// Enterprise-Grade Graceful Redis Initialization
 const getRedisClient = () => {
     const url = process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -22,43 +21,30 @@ const getRedisClient = () => {
 const redis = getRedisClient();
 
 export class AnalyticsService {
-    /**
-     * Ziyaretçiyi Redis'e kaydeder (Middleware üzerinden çağrılır)
-     */
     static async trackVisit(ipHash: string) {
-        if (!redis) return; // Fail-safe: Redis yoksa sessizce çık
+        if (!redis) return;
 
-        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        const today = new Date().toISOString().split("T")[0];
         const now = Date.now();
 
         try {
             const pipeline = redis.pipeline();
 
-            // 1. Çevrimiçi Ziyaretçi (Son 5 dakika) - Sorted Set
             pipeline.zadd("site:online", { score: now, member: ipHash });
-
-            // 2. Bugünün Benzersiz Ziyaretçisi - HyperLogLog
             pipeline.pfadd(`site:daily:${today}`, ipHash);
-
-            // 3. 5 dakikadan eski online kayıtlarını temizle
             pipeline.zremrangebyscore("site:online", 0, now - 5 * 60 * 1000);
 
-            // Fire and forget
             await pipeline.exec();
         } catch (error) {
             console.error("Redis tracking error:", error);
         }
     }
 
-    /**
-     * Footer için istatistikleri getirir
-     */
     static async getGlobalStats() {
         const today = new Date().toISOString().split("T")[0];
         const now = Date.now();
 
         try {
-            // Redis aktifse canlı verileri çek
             let onlineUsers = 1;
             let todayVisitors = 1;
 
@@ -71,7 +57,6 @@ export class AnalyticsService {
                 todayVisitors = todayVisits || 1;
             }
 
-            // DB'den geçmiş verileri çek
             const dbStats = await prisma.siteStats.findFirst({
                 orderBy: { date: "desc" }
             });
@@ -88,9 +73,38 @@ export class AnalyticsService {
         }
     }
 
-    /**
-     * Cron Job için: Gece yarısı Redis'i DB'ye eşitler
-     */
+    static async getWeeklyTraffic() {
+        try {
+            const stats = await prisma.siteStats.findMany({
+                orderBy: { date: "desc" },
+                take: 7
+            });
+
+            const days = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+
+            let chartData = stats.reverse().map(stat => ({
+                name: days[new Date(stat.date).getDay()],
+                ziyaretci: stat.yesterday || 0,
+            }));
+
+            if (chartData.length === 0) {
+                chartData = [
+                    { name: "Pzt", ziyaretci: 0 },
+                    { name: "Sal", ziyaretci: 0 },
+                    { name: "Çar", ziyaretci: 0 },
+                    { name: "Per", ziyaretci: 0 },
+                    { name: "Cum", ziyaretci: 0 },
+                    { name: "Cmt", ziyaretci: 0 },
+                    { name: "Paz", ziyaretci: 0 },
+                ];
+            }
+            return chartData;
+        } catch (error) {
+            console.error("Weekly stats fetch error:", error);
+            return [];
+        }
+    }
+
     static async syncDailyStats() {
         if (!redis) return { success: false, reason: "Redis is not configured." };
 

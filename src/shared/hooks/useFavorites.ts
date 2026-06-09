@@ -6,17 +6,35 @@ export function useFavorites() {
     const [favorites, setFavorites] = useState<string[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Sayfa yüklendiğinde LocalStorage'dan favorileri al (Hydration error önlemi)
     useEffect(() => {
-        const stored = localStorage.getItem("busra_ogretmen_favorites");
-        if (stored) {
-            try {
-                setFavorites(JSON.parse(stored));
-            } catch (e) {
-                console.error("Favoriler okunamadı", e);
+        // İlk yüklemede veriyi al
+        const loadFavorites = () => {
+            const stored = localStorage.getItem("busra_ogretmen_favorites");
+            if (stored) {
+                try {
+                    setFavorites(JSON.parse(stored));
+                } catch (e) {
+                    console.error("Favoriler okunamadı", e);
+                }
             }
-        }
+        };
+
+        loadFavorites();
         setIsLoaded(true);
+
+        const handleFavoritesUpdated = () => loadFavorites();
+
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === "busra_ogretmen_favorites") loadFavorites();
+        };
+
+        window.addEventListener("favoritesUpdated", handleFavoritesUpdated);
+        window.addEventListener("storage", handleStorageChange);
+
+        return () => {
+            window.removeEventListener("favoritesUpdated", handleFavoritesUpdated);
+            window.removeEventListener("storage", handleStorageChange);
+        };
     }, []);
 
     const toggleFavorite = (id: string) => {
@@ -28,7 +46,7 @@ export function useFavorites() {
 
             localStorage.setItem("busra_ogretmen_favorites", JSON.stringify(newFavorites));
 
-            // Diğer sekmeleri de haberdar etmek için özel event fırlat (Opsiyonel)
+            // Diğer bileşenleri (Navbar, vs.) haberdar et
             window.dispatchEvent(new Event("favoritesUpdated"));
             return newFavorites;
         });

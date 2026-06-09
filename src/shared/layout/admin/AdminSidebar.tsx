@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAdminLayout } from "@/shared/providers/AdminLayoutProvider";
 import { LayoutDashboard, Files, CheckSquare, Users, Settings, LogOut, X, Newspaper, ShieldCheck, Server } from "lucide-react";
 import type { Role } from "@prisma/client";
-import { signOut } from "next-auth/react"; // 🚀 DÜZELTME: NextAuth SignOut import edildi
+import { signOut } from "next-auth/react"; 
 
 const ROLES = {
   ADMIN: "ADMIN" as Role,
@@ -76,7 +76,7 @@ export default function AdminSidebar({ userRole }: { userRole: Role }) {
             );
           })}
         </nav>
-        {/* 🚀 DÜZELTME: onClick event handler eklenerek güvenli çıkış mekanizması sağlandı */}
+        
         <div className="p-4 border-t border-slate-800">
           <button 
             onClick={() => signOut({ callbackUrl: "/admin/login" })}

@@ -2,7 +2,7 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FileStatus, GradeLevel, ContentCategory } from "@prisma/client";
-import { s3Client } from "@/infrastructure/storage/r2"; // 🚀 DÜZELTME: Singleton import edildi
+import { s3Client } from "@/infrastructure/storage/r2";
 import crypto from "crypto";
 
 interface InitializeUploadDTO {
@@ -15,7 +15,7 @@ interface InitializeUploadDTO {
     fileSize: number;
     mimeType: string;
     ipHash: string;
-    turnstileToken: string; // 🚀 DÜZELTME
+    turnstileToken: string;
 }
 
 export class UploadService {
@@ -42,7 +42,7 @@ export class UploadService {
                 mimeType: data.mimeType,
                 status: FileStatus.UPLOAD_PENDING,
                 ipHash: data.ipHash,
-                turnstileToken: data.turnstileToken, // 🚀 DÜZELTME: Gerçek token DB'ye işlenir
+                turnstileToken: data.turnstileToken,
             }
         });
 

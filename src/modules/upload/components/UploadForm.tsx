@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2, File, X } from "lucide-react";
 import { GradeLevel, ContentCategory } from "@prisma/client";
 import Script from "next/script";
 
-// Turnstile reset fonksiyonu için global tip tanımı
 declare global {
   interface Window {
     turnstile?: {
@@ -14,10 +13,9 @@ declare global {
   }
 }
 
-// Güvenlik: İzin verilen Magic Byte (Hex) imzaları (Sadece PDF, DOCX, ZIP, PNG, JPG)
 const ALLOWED_MAGIC_BYTES: Record<string, string[]> = {
   "pdf": ["25504446"],
-  "docx": ["504b0304"], // DOCX aslında bir ZIP arşividir
+  "docx": ["504b0304"], 
   "zip": ["504b0304"],
   "png": ["89504e47"],
   "jpeg": ["ffd8ffe0", "ffd8ffe1", "ffd8ffee", "ffd8ffdb"],
@@ -44,7 +42,6 @@ export default function UploadForm() {
     }
   };
 
-  // 1. Client-Side Security: Magic Byte Validation
   const validateAndSetFile = async (selectedFile: File) => {
     setStatus("validating");
     setErrorMessage("");
@@ -62,7 +59,6 @@ export default function UploadForm() {
       return;
     }
 
-    // Dosyanın ilk 4 byte'ını oku
     const reader = new FileReader();
     reader.onloadend = function(e) {
       if (e.target?.readyState === FileReader.DONE) {
@@ -110,11 +106,10 @@ export default function UploadForm() {
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type || "application/octet-stream",
-      turnstileToken // 🚀 DÜZELTME: Token eklendi
+      turnstileToken 
     };
 
     try {
-      // 1. Backend'den Presigned URL İste
       const res = await fetch("/api/materials/upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,7 +123,6 @@ export default function UploadForm() {
 
       const { signedUrl, materialId } = responseData;
 
-      // 2. XMLHttpRequest ile Doğrudan R2'ye Yükle
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.upload.onprogress = (event) => {
@@ -192,7 +186,6 @@ export default function UploadForm() {
           </div>
         )}
 
-        {/* Sürükle Bırak Dosya Alanı */}
         <div>
           <label className="block text-sm font-bold text-slate-900 mb-3">Materyal Dosyası (PDF, DOCX, ZIP, Resim)</label>
           <div 
@@ -226,7 +219,6 @@ export default function UploadForm() {
             )}
           </div>
           
-          {/* Progress Bar */}
           {status === "uploading" && (
             <div className="mt-4">
               <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
@@ -273,7 +265,6 @@ export default function UploadForm() {
           <textarea name="description" maxLength={500} rows={4} placeholder="Materyalin içeriği, nasıl kullanılacağı hakkında kısa bir bilgi verin..." disabled={status === "uploading"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all resize-none disabled:opacity-60" />
         </div>
 
-        {/* DÜZELTME: Turnstile Eklendi */}
         <div className="cf-turnstile" data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} data-theme="light"></div>
 
         <button type="submit" disabled={!file || status === "uploading" || status === "validating"} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed">
