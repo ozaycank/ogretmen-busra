@@ -1,9 +1,14 @@
 import { z } from "zod";
 
+const sanitizeHtml = (html: string) => {
+    return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "");
+};
+
 export const NewsSchema = z.object({
     title: z.string().min(5, "Başlık en az 5 karakter olmalıdır.").max(200),
     slug: z.string().min(3).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug sadece küçük harf, rakam ve tire içerebilir."),
-    content: z.string().min(20, "İçerik çok kısa."),
+    content: z.string().min(20, "İçerik çok kısa.").transform(sanitizeHtml),
     label: z.string().min(2, "Lütfen bir etiket (kategori) seçin."),
     imageUrl: z.string().url("Geçerli bir görsel URL'si girin.").optional().or(z.literal("")),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),

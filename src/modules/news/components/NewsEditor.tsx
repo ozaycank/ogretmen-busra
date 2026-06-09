@@ -4,17 +4,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import { saveNews } from "@/app/admin/(protected)/news/actions";
 import { Save, Eye, LayoutTemplate, Settings, CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { News } from "@prisma/client";
 
-// Basit Slug Üretici (Türkçe karakterleri dönüştürür)
 const generateSlug = (text: string) => {
   return text.toLowerCase()
     .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-z0-9]+/g, '-') // Tüm boşlukları ve özel karakterleri tireye çevir
+    .replace(/^-+|-+$/g, ''); // Baş ve sondaki tireleri temizle
 };
 
 interface NewsEditorProps {
-  initialData?: any;
+  initialData?: Partial<News> | null; // 🚀 DÜZELTME: 'any' kaldırıldı
 }
 
 export default function NewsEditor({ initialData }: NewsEditorProps) {
@@ -48,10 +48,10 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
     if (formData.title.length < 5 || formData.content.length < 20) return;
     
     setSaveStatus("saving");
-    const res = await saveNews(id, formData);
+    const res = await saveNews(id, formData as any);
     
     if (res.success) {
-      if (!id && res.id) setId(res.id); // Yeni oluşturulduysa ID'yi al (Autosave takibi için)
+      if (!id && res.id) setId(res.id); 
       setSaveStatus("saved");
       if (!isAutoSave) router.push("/admin/news");
       setTimeout(() => setSaveStatus("idle"), 3000);
@@ -60,7 +60,6 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
     }
   }, [formData, id, router]);
 
-  // Otomatik Kaydetme (Autosave) - Kullanıcı 15 saniye boyunca klavyeyi bırakırsa taslak kaydeder
   useEffect(() => {
     if (formData.status !== "DRAFT" || !formData.title || !formData.content) return;
     const timer = setTimeout(() => handleSave(true), 15000);
@@ -69,7 +68,6 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Sol: Ana Editör */}
       <div className="lg:col-span-8 space-y-6">
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
           
@@ -83,7 +81,7 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
           {activeTab === "editor" ? (
             <div className="space-y-5">
               <input type="text" value={formData.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Haber Başlığı" className="w-full text-2xl font-black text-slate-900 border-none focus:ring-0 placeholder:text-slate-300 p-0" />
-              <input type="text" value={formData.slug} onChange={(e) => updateField("slug", e.target.value)} placeholder="url-uzantisi-slug" className="w-full text-sm font-mono text-sky-600 bg-sky-50 p-2 rounded-lg border border-sky-100 focus:outline-none" />
+              <input type="text" value={formData.slug} onChange={(e) => updateField("slug", generateSlug(e.target.value))} placeholder="url-uzantisi-slug" className="w-full text-sm font-mono text-sky-600 bg-sky-50 p-2 rounded-lg border border-sky-100 focus:outline-none" />
               <textarea value={formData.content} onChange={(e) => updateField("content", e.target.value)} placeholder="Haberin içeriğini yazmaya başlayın..." className="w-full min-h-[400px] text-slate-700 border-none focus:ring-0 placeholder:text-slate-300 p-0 resize-y" />
             </div>
           ) : (
@@ -97,7 +95,6 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
                 <textarea value={formData.seoDescription} onChange={(e) => updateField("seoDescription", e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 resize-none" rows={3} maxLength={160} />
               </div>
               
-              {/* SEO Google Önizleme Simülasyonu */}
               <div className="mt-8 p-4 bg-slate-50 border border-slate-200 rounded-xl">
                 <p className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Google Arama Önizlemesi</p>
                 <div className="text-[20px] text-[#1a0dab] hover:underline cursor-pointer truncate">{formData.seoTitle || formData.title || "Başlık"}</div>
@@ -110,7 +107,6 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
         </div>
       </div>
 
-      {/* Sağ: Yayınlama ve Meta Veriler */}
       <div className="lg:col-span-4 space-y-6">
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
           
@@ -133,6 +129,7 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
               <option value="ATAMA">ATAMA</option>
               <option value="GÜNDEM">GÜNDEM</option>
               <option value="MAAŞ">MAAŞ</option>
+              <option value="DUYURU">DUYURU</option>
             </select>
           </div>
 
@@ -152,7 +149,6 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
 
         </div>
       </div>
-
     </div>
   );
 }

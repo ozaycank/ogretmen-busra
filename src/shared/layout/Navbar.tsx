@@ -101,8 +101,11 @@ export default function Navbar() {
           
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2" aria-label="Ana Sayfaya Dön">
-              <span className="text-2xl font-black tracking-tight text-[#e11d48]">Büşra</span>
-              <span className="text-2xl font-bold text-[#0284c7]">Öğretmen</span>
+              <img src="/ogretmenbusraicon.png" alt="Öğretmen Büşra" className="w-10 h-10 object-contain mix-blend-multiply" />
+              <div className="flex items-center">
+                <span className="text-2xl font-black tracking-tight text-[#e11d48]">Büşra</span>
+                <span className="text-2xl font-bold text-[#0284c7]">Öğretmen</span>
+              </div>
             </Link>
           </div>
 

@@ -80,11 +80,18 @@ export default async function Footer() {
         <div className={`grid grid-cols-1 md:grid-cols-12 gap-8 ${isStatsVisible ? 'border-t border-slate-800/50 pt-10' : ''}`}>
           
           <div className="md:col-span-12 lg:col-span-6">
-            <p className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-rose-500 flex items-center justify-center text-sm font-black text-white">BÖ</span>
-              Büşra Öğretmen
-            </p>
-            <p className="text-sm text-slate-400 mt-3 leading-relaxed max-w-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <img 
+                src="/ogretmenbusraicon.png" 
+                alt="Öğretmen Büşra Logo" 
+                className="w-10 h-10 object-cover" 
+                style={{ clipPath: "circle(48% at 50% 50%)" }}
+              />
+              <p className="text-xl font-bold text-white tracking-wide">
+                Büşra Öğretmen
+              </p>
+            </div>
+            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
               Türkiye'nin dört bir yanındaki öğretmenler, öğrenciler ve veliler için ücretsiz, güvenilir ve nitelikli eğitim materyalleri deposu.
             </p>
           </div>
