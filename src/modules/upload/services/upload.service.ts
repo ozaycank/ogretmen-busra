@@ -1,18 +1,9 @@
 import { prisma } from "@/infrastructure/database/prisma";
-import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FileStatus, GradeLevel, ContentCategory } from "@prisma/client";
+import { s3Client } from "@/infrastructure/storage/r2"; // 🚀 DÜZELTME: Singleton import edildi
 import crypto from "crypto";
-
-const s3Client = new S3Client({
-    region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
-    },
-    forcePathStyle: true,
-});
 
 interface InitializeUploadDTO {
     title: string;
@@ -24,6 +15,7 @@ interface InitializeUploadDTO {
     fileSize: number;
     mimeType: string;
     ipHash: string;
+    turnstileToken: string; // 🚀 DÜZELTME
 }
 
 export class UploadService {
@@ -32,7 +24,6 @@ export class UploadService {
         const extension = data.fileName.split('.').pop()?.toLowerCase() || "unknown";
         const safeFileKey = `uploads/materials/${fileId}.${extension}`;
 
-        // 🚀 DÜZELTME: Fallback URL custom domain oldu
         const r2PublicUrl = process.env.R2_PUBLIC_URL || "https://r2.ogretmenbusra.com";
 
         await prisma.material.create({
@@ -51,7 +42,7 @@ export class UploadService {
                 mimeType: data.mimeType,
                 status: FileStatus.UPLOAD_PENDING,
                 ipHash: data.ipHash,
-                turnstileToken: crypto.randomUUID(),
+                turnstileToken: data.turnstileToken, // 🚀 DÜZELTME: Gerçek token DB'ye işlenir
             }
         });
 
@@ -67,7 +58,6 @@ export class UploadService {
         return { signedUrl, materialId: fileId, fileKey: safeFileKey };
     }
 
-    // 🚀 YENİ EKLENEN KORUMA: R2 üzerinde dosyanın gerçekten var olduğunu doğrular
     static async verifyFileExistsInR2(fileKey: string): Promise<boolean> {
         try {
             const command = new HeadObjectCommand({
@@ -75,10 +65,10 @@ export class UploadService {
                 Key: fileKey,
             });
             await s3Client.send(command);
-            return true; // Dosya fiziksel olarak storage'da var
+            return true;
         } catch (error: any) {
             if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
-                return false; // Ghost record tespit edildi
+                return false;
             }
             throw error;
         }

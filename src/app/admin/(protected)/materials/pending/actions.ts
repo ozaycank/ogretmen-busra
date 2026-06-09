@@ -16,7 +16,7 @@ export async function bulkModerateMaterials(materialIds: string[], action: "APPR
         }
 
         const headerList = await headers();
-        const ip = headerList.get("x-forwarded-for") || "unknown";
+        const ip = headerList.get("cf-connecting-ip") || headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
         const newStatus = action === "APPROVE" ? FileStatus.APPROVED : FileStatus.REJECTED;
         const auditAction = action === "APPROVE" ? AuditAction.MATERIAL_APPROVED : AuditAction.MATERIAL_REJECTED;

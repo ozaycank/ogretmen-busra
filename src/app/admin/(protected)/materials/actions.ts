@@ -5,21 +5,17 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { FileStatus, AuditAction, Role } from "@prisma/client";
 import { headers } from "next/headers";
 import { logger } from "@/infrastructure/logger";
-
-// Mock Session (Gerçek Auth entegrasyonunda değiştirilecek)
-async function getAdminSession() {
-    return { user: { id: "admin-1", role: Role.ADMIN } };
-}
+import { auth } from "@/auth";
 
 export async function updateMaterialStatus(materialId: string, newStatus: FileStatus) {
     try {
-        const session = await getAdminSession();
-        if (!session || (session.user.role !== Role.ADMIN && session.user.role !== Role.MODERATOR)) {
+        const session = await auth();
+        if (!session?.user || (session.user.role !== Role.ADMIN && session.user.role !== Role.MODERATOR)) {
             throw new Error("Yetkisiz işlem.");
         }
 
         const headerList = await headers();
-        const ip = headerList.get("x-forwarded-for") || "unknown";
+        const ip = headerList.get("cf-connecting-ip") || headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
         // Durumu güncelle
         const updated = await prisma.material.update({
@@ -50,8 +46,8 @@ export async function updateMaterialStatus(materialId: string, newStatus: FileSt
 
 export async function bulkUpdateStatus(materialIds: string[], newStatus: FileStatus) {
     try {
-        const session = await getAdminSession();
-        if (!session || session.user.role !== Role.ADMIN) {
+        const session = await auth();
+        if (!session?.user || session.user.role !== Role.ADMIN) {
             throw new Error("Toplu işlem için Admin yetkisi gereklidir.");
         }
 

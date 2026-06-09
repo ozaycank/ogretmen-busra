@@ -15,6 +15,11 @@ export default function ModerationPanel({ materialId, fileUrl, fileType }: Moder
   const [modalType, setModalType] = useState<"APPROVE" | "REJECT" | null>(null);
   const [reason, setReason] = useState("");
 
+  const safeFileUrl = fileUrl.replace(
+    /https:\/\/pub-[a-zA-Z0-9]+\.r2\.dev/g, 
+    "https://r2.ogretmenbusra.com"
+  );
+
   const handleAction = () => {
     if (!modalType) return;
     startTransition(async () => {
@@ -44,19 +49,24 @@ export default function ModerationPanel({ materialId, fileUrl, fileType }: Moder
       <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 h-[600px] relative flex flex-col">
         <div className="bg-slate-800 p-3 flex justify-between items-center text-slate-300">
           <span className="text-sm font-bold flex items-center gap-2"><FileText size={16}/> Güvenli Önizleme</span>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sky-400 hover:text-sky-300 text-sm font-bold">
+          <a href={safeFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sky-400 hover:text-sky-300 text-sm font-bold">
             <Download size={16} /> Orijinali İndir
           </a>
         </div>
         <div className="flex-1 bg-white">
           {fileType === "pdf" ? (
-            <iframe src={`${fileUrl}#toolbar=0`} className="w-full h-full border-none" title="PDF Preview" />
+            <iframe 
+              src={`${safeFileUrl}#toolbar=0`} 
+              className="w-full h-full border-none" 
+              title="PDF Preview"
+              sandbox="allow-same-origin allow-scripts" 
+            />
           ) : ["png", "jpg", "jpeg"].includes(fileType) ? (
-            <img src={fileUrl} alt="Preview" className="w-full h-full object-contain bg-slate-100" />
+            <img src={safeFileUrl} alt="Preview" className="w-full h-full object-contain bg-slate-100" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-500">
               <AlertTriangle size={48} className="mb-4 text-amber-500" />
-              <p className="font-bold">Bu dosya türü (.tr{fileType}) için tarayıcı önizlemesi desteklenmiyor.</p>
+              <p className="font-bold">Bu dosya türü (.{fileType}) için tarayıcı önizlemesi desteklenmiyor.</p>
               <p className="text-sm mt-2">İncelemek için dosyayı indirmelisiniz.</p>
             </div>
           )}

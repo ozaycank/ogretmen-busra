@@ -17,24 +17,44 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     providers: [
         Credentials({
             async authorize(credentials, req) {
+                // 🚀 DÜZELTME: turnstileToken'i şemaya ekleyip validate ediyoruz
                 const parsed = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .object({
+                        email: z.string().email(),
+                        password: z.string().min(6),
+                        turnstileToken: z.string().optional() // Frontend'den form ile geliyor
+                    })
                     .safeParse(credentials);
 
                 if (!parsed.success) return null;
 
+                const { email, password, turnstileToken } = parsed.data;
+
                 let ip = "127.0.0.1";
                 if (req && req.headers instanceof Headers) {
-                    ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+                    ip = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
                 }
 
-                try {
-                    const user = await AuthService.verifyCredentials(
-                        parsed.data.email,
-                        parsed.data.password,
-                        ip
-                    );
+                // 🚀 DÜZELTME 1: Cloudflare Turnstile Server-Side Validation
+                const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+                if (turnstileSecret && turnstileToken) {
+                    const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: `secret=${turnstileSecret}&response=${turnstileToken}&remoteip=${ip}`,
+                    });
+                    const verifyOutcome = await verifyRes.json();
 
+                    if (!verifyOutcome.success) {
+                        throw new CustomAuthError("Güvenlik doğrulaması başarısız oldu (Bot algılandı).");
+                    }
+                } else if (turnstileSecret && !turnstileToken) {
+                    throw new CustomAuthError("Güvenlik doğrulaması eksik.");
+                }
+
+                // 🚀 DÜZELTME 2: İnsan olduğu kanıtlandı, şimdi DB doğrulaması yap
+                try {
+                    const user = await AuthService.verifyCredentials(email, password, ip);
                     if (!user) return null;
                     return { id: user.id, email: user.email, name: user.name, role: user.role };
                 } catch (error: any) {

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
-import { prisma } from "@/infrastructure/database/prisma";
-import { FileStatus, GradeLevel, ContentCategory, Prisma } from "@prisma/client";
+import { MaterialService } from "@/modules/materials/services/material.service";
+import { getMaterialsQuerySchema } from "@/modules/materials/schemas/material.schema";
 import MaterialCard from "@/modules/materials/components/MaterialCard";
 
 import FilterSidebar from "@/modules/materials/components/FilterSidebar";
@@ -11,7 +11,6 @@ import SkeletonCard from "@/shared/ui/Skeleton";
 import { SearchX } from "lucide-react";
 import FavoritesLink from "@/modules/favorites/components/FavoritesLink";
 
-// Dinamik SEO Metadata
 export async function generateMetadata({ searchParams }: { searchParams: Promise<any> }): Promise<Metadata> {
   const params = await searchParams;
   const searchQuery = params.search ? `"${params.search}" Arama Sonuçları` : "Eğitim Materyalleri ve Etkinlikler";
@@ -21,18 +20,15 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   };
 }
 
-const ITEMS_PER_PAGE = 12;
-
 export default async function MaterialsPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const params = await searchParams;
-  const search = params.search || "";
-  const grade = params.grade as GradeLevel | undefined;
-  const category = params.category as ContentCategory | undefined;
-  const currentPage = Number(params.page) || 1;
+  
+  //URL'den gelen string verileri Zod ile güvenli hale getiriyoruz
+  const parsedParams = getMaterialsQuerySchema.parse(params);
 
   return (
     <div className="flex flex-col md:flex-row gap-8 items-start pb-12">
@@ -50,7 +46,6 @@ export default async function MaterialsPage({
               </p>
             </div>
             
-            {/* Dinamik Favoriler Butonumuz */}
             <div>
               <FavoritesLink />
             </div>
@@ -58,13 +53,12 @@ export default async function MaterialsPage({
           <MaterialSearch />
         </header>
 
-        {/* Suspense ile veritabanı sorgusu sürerken iskelet gösteriyoruz */}
-        <Suspense key={`${search}-${grade}-${category}-${currentPage}`} fallback={
+        <Suspense key={`${parsedParams.search}-${parsedParams.grade}-${parsedParams.category}-${parsedParams.page}`} fallback={
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         }>
-          <MaterialList search={search} grade={grade} category={category} page={currentPage} />
+          <MaterialList parsedParams={parsedParams} />
         </Suspense>
       </main>
     </div>
@@ -74,42 +68,11 @@ export default async function MaterialsPage({
 // -------------------------------------------------------------
 // VERİTABANI SORGULAMA BİLEŞENİ
 // -------------------------------------------------------------
-async function MaterialList({ 
-  search, grade, category, page 
-}: { 
-  search: string, grade?: GradeLevel, category?: ContentCategory, page: number 
-}) {
-  const skip = (page - 1) * ITEMS_PER_PAGE;
+async function MaterialList({ parsedParams }: { parsedParams: any }) {
+  // Doğrudan Prisma kullanımı kaldırıldı. Service Layer çağrılıyor.
+  const { items, totalPages, page } = await MaterialService.getMaterials(parsedParams);
 
-  // Dinamik Prisma Sorgusu Oluşturma
-  const whereClause: Prisma.MaterialWhereInput = {
-    status: FileStatus.APPROVED,
-  };
-
-  if (search) {
-    whereClause.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ];
-  }
-  
-  if (grade) whereClause.grade = grade;
-  if (category) whereClause.category = category;
-
-  // Paralel olarak hem datayı hem toplam sayıyı çekiyoruz (Performans için Promise.all)
-  const [materials, totalCount] = await Promise.all([
-    prisma.material.findMany({
-      where: whereClause,
-      orderBy: { createdAt: "desc" },
-      take: ITEMS_PER_PAGE,
-      skip: skip,
-    }),
-    prisma.material.count({ where: whereClause })
-  ]);
-
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-
-  if (materials.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center bg-white border border-slate-100 rounded-3xl p-16 text-center shadow-sm">
         <div className="bg-slate-50 p-6 rounded-full text-slate-400 mb-4">
@@ -126,8 +89,8 @@ async function MaterialList({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {materials.map((material) => (
-          <MaterialCard key={material.id} material={material} />
+        {items.map((material) => (
+          <MaterialCard key={material.id} material={material as any} />
         ))}
       </div>
       

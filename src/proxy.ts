@@ -23,16 +23,18 @@ const ratelimit = redis
 
 export default auth(async (req) => {
     const pathname = req.nextUrl.pathname;
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1";
+
+    // DÜZELTME: Güvenli Cloudflare IP Header tercihi
+    const ip = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
 
     // -----------------------------
-    // RATE LIMIT (Admin Login & API postları için. /api/auth HARİÇ)
+    // RATE LIMIT KORUMASI
     // -----------------------------
-    const isProtectedPost = req.method === "POST" &&
-        !pathname.startsWith("/api/auth") &&
-        (pathname.startsWith("/api/") || pathname.startsWith("/admin/login"));
+    // DÜZELTME: NextAuth login POST rotası artık Edge Rate Limit tarafından korunuyor!
+    const isLoginAttempt = req.method === "POST" && pathname === "/api/auth/callback/credentials";
+    const isProtectedApiPost = req.method === "POST" && pathname.startsWith("/api/") && !pathname.startsWith("/api/auth");
 
-    if (ratelimit && isProtectedPost) {
+    if (ratelimit && (isLoginAttempt || isProtectedApiPost)) {
         const { success } = await ratelimit.limit(`ip:${ip}`);
         if (!success) {
             return NextResponse.json({ error: "Çok fazla istek gönderdiniz. Lütfen biraz bekleyin." }, { status: 429 });
@@ -72,6 +74,6 @@ export default auth(async (req) => {
 });
 
 export const config = {
-    // ÇOK KRİTİK: api/auth middleware'e TAKILMAYACAK (Bypass)!
-    matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+    // CRITICAL FIX: api/auth matcher engeli kaldırıldı! (Artık Middleware'den geçecek)
+    matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

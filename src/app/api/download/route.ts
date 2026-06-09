@@ -1,19 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/infrastructure/database/prisma";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FileStatus } from "@prisma/client";
-
-// Cloudflare R2 - S3 İstemcisi Başlatma
-const s3Client = new S3Client({
-    region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
-    },
-    forcePathStyle: true,
-});
+import { s3Client } from "@/infrastructure/storage/r2";
 
 export async function GET(req: NextRequest) {
     try {
@@ -35,11 +25,10 @@ export async function GET(req: NextRequest) {
         }
 
         // 2. AWS S3 API üzerinden güvenli ve süreli (15 Dakika) bir indirme linki üret
-        // Bu yöntem, ISS'ler tarafından engellenen r2.dev domainini bypass eder.
         const command = new GetObjectCommand({
             Bucket: process.env.R2_BUCKET_NAME,
             Key: material.fileKey,
-            // KRİTİK: Tarayıcıya dosyayı açmamasını, doğrudan "Farklı Kaydet" penceresini tetiklemesini söyler.
+            // Tarayıcıya dosyayı açmamasını, doğrudan "Farklı Kaydet" penceresini tetiklemesini söyler.
             ResponseContentDisposition: `attachment; filename="${encodeURIComponent(material.originalName)}"`,
         });
 

@@ -20,7 +20,8 @@ const ratelimit = new Ratelimit({
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
     const headerList = await headers();
-    const ip = headerList.get("x-forwarded-for") || "127.0.0.1";
+    // Güvenli IP tespiti
+    const ip = headerList.get("cf-connecting-ip") || headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
     const ipHash = crypto.createHash("sha256").update(ip).digest("hex");
 
     const { success: rateLimitSuccess } = await ratelimit.limit(`ratelimit:confirm_upload:${ipHash}`);
@@ -48,11 +49,9 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
         return NextResponse.json({ error: "Yetkisiz işlem. IP adresi eşleşmiyor." }, { status: 403 });
     }
 
-    // 🚀 CRITICAL FIX: Kör onay kaldırıldı. R2 storage doğrulama katmanı eklendi.
     const fileExists = await UploadService.verifyFileExistsInR2(material.fileKey);
 
     if (!fileExists) {
-        // Dosya R2'ye ulaşmamış. Çöp DB kaydını temizle ve istemciye hata dön.
         await prisma.material.delete({ where: { id: materialId } });
         console.error(`[UPLOAD_FAILED] Ghost Record engellendi. Material: ${materialId}`);
         return NextResponse.json({
@@ -60,7 +59,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
         }, { status: 400 });
     }
 
-    // Gerçekten yüklendiği kanıtlandıktan sonra onay ver.
     await UploadService.confirmUploadSuccess(materialId);
 
     return NextResponse.json({ success: true, message: "Upload confirmed and pushed to moderation queue." });
