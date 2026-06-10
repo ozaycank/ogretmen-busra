@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FileText, Download, Eye, FileArchive, FileImage, Heart } from "lucide-react";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 
-
 interface MaterialProps {
   id: string;
   title: string;
@@ -37,14 +36,15 @@ const formatEnum = (text: string) => {
 export default function MaterialCard({ material }: { material: MaterialProps }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const isFav = isFavorite(material.id);
+  
   return (
     <div className="group block h-full relative">
-      <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col relative overflow-hidden group-hover:-translate-y-1">
-        {/* Favori (Kalp) Butonu - En Üst Katman */}
+      <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-xl transition duration-300 h-full flex flex-col relative overflow-hidden group-hover:-translate-y-1 will-change-transform">
+        
         <button 
           onClick={(e) => {
-            e.preventDefault(); // Sayfa yönlendirmesini engeller
-            e.stopPropagation(); // Tıklamanın Link'e geçmesini engeller
+            e.preventDefault(); 
+            e.stopPropagation(); 
             toggleFavorite(material.id);
           }}
           className={`absolute top-4 right-4 z-30 p-2 rounded-full backdrop-blur-sm shadow-sm transition-all hover:scale-110 active:scale-95 ${isFav ? "bg-rose-50 text-rose-500" : "bg-white/80 text-slate-400 hover:text-rose-400"}`}
@@ -53,10 +53,8 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
           <Heart size={20} className={isFav ? "fill-rose-500" : ""} />
         </button>
 
-        {/* ÇÖZÜM: HTML standartlarını bozmadan tüm kartı tıklanabilir yapan görünmez ana katman */}
         <Link href={`/materyal/${material.id}`} className="absolute inset-0 z-10" aria-label={material.title} />
         
-        {/* Kategori ve Sınıf Etiketleri */}
         <div className="flex gap-2 mb-4">
           <span className="bg-sky-50 text-[#0284c7] px-3 py-1 text-xs font-bold rounded-full">
             {formatEnum(material.grade)}
@@ -66,25 +64,20 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
           </span>
         </div>
 
-        {/* Başlık ve İkon */}
         <div className="flex items-start gap-3 mb-2">
           <div className="p-2 bg-gray-50 rounded-xl group-hover:scale-110 transition-transform">
             {getFileIcon(material.fileType)}
           </div>
-          <h3 className="text-lg font-bold text-gray-800 leading-tight line-clamp-2 flex-1 group-hover:text-[#0284c7] transition-colors">
+          <h3 className="text-lg font-bold text-gray-800 leading-tight line-clamp-2 min-h-[45px] group-hover:text-[#0284c7] transition-colors">
             {material.title}
           </h3>
         </div>
-
-        {/* Açıklama */}
-        <p className="text-sm text-gray-500 line-clamp-2 mb-6 flex-grow">
+        <p className="text-sm text-gray-500 line-clamp-2 mb-6 min-h-[40px] flex-grow">
           {material.description || "Açıklama bulunmuyor."}
         </p>
 
-        {/* Yazar ve Metrikler */}
         <div className="border-t border-gray-50 pt-4 flex justify-between items-center mt-auto relative z-20">
           
-          {/* ÇÖZÜM: z-20 katmanında bağımsız tıklanabilir Yazar Portfolyo Linki */}
           <Link 
             href={`/yazar/${encodeURIComponent(material.authorName)}`}
             className="flex items-center gap-2 group/author hover:opacity-80 transition-opacity"
@@ -97,7 +90,6 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
             </span>
           </Link>
 
-          {/* Metrikler */}
           <div className="flex gap-3 text-xs text-gray-400 font-medium select-none">
             <span className="flex items-center gap-1"><Eye size={14} /> {material.viewCount}</span>
             <span className="flex items-center gap-1"><Download size={14} /> {material.downloadCount}</span>

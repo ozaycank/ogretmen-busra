@@ -11,7 +11,7 @@ export default function FavoritesLink() {
   return (
     <Link
       href="/favoriler"
-      className="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 hover:shadow-sm transition-all group"
+      className="relative inline-flex items-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 hover:shadow-sm transition-all group"
     >
       <Heart 
         size={20} 
@@ -19,9 +19,8 @@ export default function FavoritesLink() {
       />
       <span>Favorilerim</span>
       
-      {/* Eğer favori varsa sayısını kırmızı bir badge ile göster */}
       {isLoaded && favorites.length > 0 && (
-        <span className="bg-rose-500 text-white text-xs px-2.5 py-0.5 rounded-full ml-1 shadow-sm">
+        <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-md border-2 border-white flex items-center justify-center min-w-[24px]">
           {favorites.length}
         </span>
       )}
