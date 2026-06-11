@@ -21,7 +21,6 @@ export default async function AdminMaterialsPage({
   const page = Number(params.page) || 1;
   const skip = (page - 1) * ITEMS_PER_PAGE;
 
-  // Prisma Dinamik Arama Sorgusu
   const whereClause = {
     ...(statusFilter && { status: statusFilter }),
     ...(q && {
@@ -33,7 +32,6 @@ export default async function AdminMaterialsPage({
     })
   };
 
-  // Paralel Veri Çekimi (Performans için)
   const [materials, totalCount] = await Promise.all([
     prisma.material.findMany({
       where: whereClause,
@@ -55,9 +53,7 @@ export default async function AdminMaterialsPage({
         </div>
       </div>
 
-      <MaterialTable materials={materials} totalCount={totalCount} />
-      
-      {/* Gelecekte buraya Pagination bileşeni eklenebilir */}
+      <MaterialTable materials={materials as any} totalCount={totalCount} />
     </div>
   );
 }

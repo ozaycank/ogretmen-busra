@@ -13,6 +13,7 @@ export type EnrichedPendingMaterial = {
   title: string;
   authorName: string;
   grade: string;
+  subject: string;
   category: string;
   fileType: string;
   fileSize: number;
@@ -143,8 +144,8 @@ export default function PendingQueueTable({ materials: initialMaterials, nextCur
                   </td>
                   <td className="p-4">
                     <span className="block font-medium text-slate-700 text-sm">{item.grade.replace("_", " ")}</span>
-                    <span className="text-xs text-slate-500">{item.category.replace(/_/g, " ")}</span>
-                  </td>
+                    <span className="text-xs text-slate-500">{item.category.replace(/_/g, " ")} • {item.subject.replace(/_/g, " ")}</span>  
+                  </td>                  
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className={`flex items-center justify-center w-8 h-8 rounded-full font-black text-sm border-2 ${

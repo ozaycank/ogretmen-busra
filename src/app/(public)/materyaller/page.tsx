@@ -2,10 +2,12 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { MaterialService } from "@/modules/materials/services/material.service";
 import { getMaterialsQuerySchema } from "@/modules/materials/schemas/material.schema";
-import MaterialCard from "@/modules/materials/components/MaterialCard";
+import { formatSubject } from "@/shared/constants/curriculum";
 
+import MaterialCard from "@/modules/materials/components/MaterialCard";
 import FilterSidebar from "@/modules/materials/components/FilterSidebar";
 import MaterialSearch from "@/modules/materials/components/MaterialSearch";
+import SubjectFilterBar from "@/modules/materials/components/SubjectFilterBar"; 
 import Pagination from "@/modules/materials/components/Pagination";
 import SkeletonCard from "@/shared/ui/Skeleton";
 import { SearchX } from "lucide-react";
@@ -13,9 +15,22 @@ import FavoritesLink from "@/modules/favorites/components/FavoritesLink";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<any> }): Promise<Metadata> {
   const params = await searchParams;
-  const searchQuery = params.search ? `"${params.search}" Arama Sonuçları` : "Eğitim Materyalleri ve Etkinlikler";
+  let titleStr = "Eğitim Materyalleri ve Etkinlikler";
+  
+  if (params.grade) {
+     titleStr = params.grade.replace("_", " ").replace("SINIF", "Sınıf");
+     if (params.subject && params.subject !== "TUM_DERSLER") {
+         titleStr += ` ${formatSubject(params.subject)}`;
+     }
+     titleStr += " Materyalleri";
+  }
+
+  if (params.search) {
+      titleStr = `"${params.search}" Arama Sonuçları`;
+  }
+
   return {
-    title: `${searchQuery} | Büşra Öğretmen`,
+    title: `${titleStr} | Büşra Öğretmen`,
     description: "Sınıf seviyesine ve derslere göre filtrelenebilir ücretsiz öğretmen materyalleri.",
   };
 }
@@ -26,8 +41,6 @@ export default async function MaterialsPage({
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const params = await searchParams;
-  
-  //URL'den gelen string verileri Zod ile güvenli hale getiriyoruz
   const parsedParams = getMaterialsQuerySchema.parse(params);
 
   return (
@@ -35,7 +48,7 @@ export default async function MaterialsPage({
       <FilterSidebar />
 
       <main className="flex-1 w-full min-w-0">
-        <header className="mb-8 space-y-6">
+        <header className="mb-4 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -53,7 +66,9 @@ export default async function MaterialsPage({
           <MaterialSearch />
         </header>
 
-        <Suspense key={`${parsedParams.search}-${parsedParams.grade}-${parsedParams.category}-${parsedParams.page}`} fallback={
+        <SubjectFilterBar />
+
+        <Suspense key={`${parsedParams.search}-${parsedParams.grade}-${parsedParams.subject}-${parsedParams.category}-${parsedParams.page}`} fallback={
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
@@ -65,11 +80,7 @@ export default async function MaterialsPage({
   );
 }
 
-// -------------------------------------------------------------
-// VERİTABANI SORGULAMA BİLEŞENİ
-// -------------------------------------------------------------
 async function MaterialList({ parsedParams }: { parsedParams: any }) {
-  // Doğrudan Prisma kullanımı kaldırıldı. Service Layer çağrılıyor.
   const { items, totalPages, page } = await MaterialService.getMaterials(parsedParams);
 
   if (items.length === 0) {

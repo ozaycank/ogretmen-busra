@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { FileText, Download, Eye, FileArchive, FileImage, Heart } from "lucide-react";
+import { FileText, Download, Eye, FileArchive, FileImage, Heart, BookOpen } from "lucide-react";
 import { useFavorites } from "@/shared/hooks/useFavorites";
+import { formatSubject } from "@/shared/constants/curriculum";
 
 interface MaterialProps {
   id: string;
@@ -12,6 +13,7 @@ interface MaterialProps {
   fileType: string;
   authorName: string;
   grade: string;
+  subject: string; 
   category: string;
   viewCount: number;
   downloadCount: number;
@@ -55,13 +57,18 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
 
         <Link href={`/materyal/${material.id}`} className="absolute inset-0 z-10" aria-label={material.title} />
         
-        <div className="flex gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4 pr-10">
           <span className="bg-sky-50 text-[#0284c7] px-3 py-1 text-xs font-bold rounded-full">
             {formatEnum(material.grade)}
           </span>
           <span className="bg-rose-50 text-[#e11d48] px-3 py-1 text-xs font-bold rounded-full">
             {formatEnum(material.category)}
           </span>
+          {material.subject !== "TUM_DERSLER" && (
+            <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-3 py-1 text-xs font-bold rounded-full">
+              <BookOpen size={12} /> {formatSubject(material.subject)}
+            </span>
+          )}
         </div>
 
         <div className="flex items-start gap-3 mb-2">
@@ -72,12 +79,12 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
             {material.title}
           </h3>
         </div>
+
         <p className="text-sm text-gray-500 line-clamp-2 mb-6 min-h-[40px] flex-grow">
           {material.description || "Açıklama bulunmuyor."}
         </p>
 
         <div className="border-t border-gray-50 pt-4 flex justify-between items-center mt-auto relative z-20">
-          
           <Link 
             href={`/yazar/${encodeURIComponent(material.authorName)}`}
             className="flex items-center gap-2 group/author hover:opacity-80 transition-opacity"
@@ -94,7 +101,6 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
             <span className="flex items-center gap-1"><Eye size={14} /> {material.viewCount}</span>
             <span className="flex items-center gap-1"><Download size={14} /> {material.downloadCount}</span>
           </div>
-
         </div>
       </div>
     </div>

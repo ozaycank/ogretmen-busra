@@ -1,25 +1,24 @@
 import { prisma } from "@/infrastructure/database/prisma";
-import { GradeLevel, ContentCategory } from "@prisma/client";
+import { GradeLevel, ContentCategory, SubjectType } from "@prisma/client";
 
 interface GetMaterialsQueryDTO {
     page: number;
     limit: number;
     grade?: GradeLevel;
+    subject?: SubjectType;
     category?: ContentCategory;
     search?: string;
 }
 
 export class MaterialService {
-
-    /**
-     * Platformdaki onaylanmış materyalleri sayfalama ve filtreleme ile getirir.
-     */
-    static async getMaterials({ page, limit, grade, category, search }: GetMaterialsQueryDTO) {
+    static async getMaterials({ page, limit, grade, subject, category, search }: GetMaterialsQueryDTO) {
         const skip = (page - 1) * limit;
 
         const where = {
             status: "APPROVED" as const,
             ...(grade && { grade }),
+            // 🚀 DÜZELTME: TUM_DERSLER filtresi DB'de özel olarak yakalanmaz, tümünü getirir.
+            ...(subject && subject !== "TUM_DERSLER" && { subject }),
             ...(category && { category }),
             ...(search && {
                 OR: [
@@ -43,6 +42,7 @@ export class MaterialService {
                     fileSize: true,
                     authorName: true,
                     grade: true,
+                    subject: true,
                     category: true,
                     downloadCount: true,
                     viewCount: true,
@@ -60,8 +60,4 @@ export class MaterialService {
             totalPages: Math.ceil(total / limit)
         };
     }
-
-    // NOTE: createMaterial via Buffer is intentionally removed.
-    // Uploads must utilize the Presigned URL flow defined in UploadService 
-    // to bypass 4.5MB Vercel Serverless payload limits.
 }

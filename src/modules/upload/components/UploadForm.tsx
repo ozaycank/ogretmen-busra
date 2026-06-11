@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2, File, X } from "lucide-react";
 import { GradeLevel, ContentCategory } from "@prisma/client";
 import Script from "next/script";
+import { CURRICULUM_MAP, formatSubject } from "@/shared/constants/curriculum";
 
 declare global {
   interface Window {
@@ -30,6 +31,9 @@ export default function UploadForm() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [status, setStatus] = useState<"idle" | "validating" | "uploading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  
+  const [selectedGrade, setSelectedGrade] = useState<GradeLevel | "">("");
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
@@ -102,6 +106,7 @@ export default function UploadForm() {
       description: formData.get("description") as string,
       authorName: formData.get("authorName") as string,
       grade: formData.get("grade") as string,
+      subject: formData.get("subject") as string,
       category: formData.get("category") as string,
       fileName: file.name,
       fileSize: file.size,
@@ -140,7 +145,7 @@ export default function UploadForm() {
             } catch (e) {
               reject(new Error("Onay bildiriminde hata oluştu."));
             }
-          } else reject(new Error("Dosya yüklenirken R2 reddetti. (CORS ayarlarınızı kontrol edin)"));
+          } else reject(new Error("Dosya yüklenirken R2 reddetti."));
         };
         xhr.onerror = () => reject(new Error("Ağ hatası oluştu."));
         
@@ -158,17 +163,18 @@ export default function UploadForm() {
     }
   };
 
+  // Dinamik ders listesi
+  const availableSubjects = selectedGrade ? CURRICULUM_MAP[selectedGrade] : [];
+
   if (status === "success") {
     return (
       <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-12 text-center flex flex-col items-center">
-        <div className="bg-emerald-100 p-4 rounded-full text-emerald-600 mb-6">
-          <CheckCircle2 size={48} />
-        </div>
+        <div className="bg-emerald-100 p-4 rounded-full text-emerald-600 mb-6"><CheckCircle2 size={48} /></div>
         <h2 className="text-2xl font-black text-slate-900 mb-2">Materyaliniz Başarıyla Gönderildi!</h2>
         <p className="text-slate-600 max-w-md mb-8">
           Dosyanız güvenlik taramasından ve editör onayından geçtikten sonra sistemde yayınlanacaktır. Eğitime katkınız için teşekkür ederiz.
         </p>
-        <button onClick={() => { setFile(null); setStatus("idle"); setUploadProgress(0); }} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
+        <button onClick={() => { setFile(null); setStatus("idle"); setUploadProgress(0); setSelectedGrade(""); }} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
           Yeni Materyal Ekle
         </button>
       </div>
@@ -243,14 +249,35 @@ export default function UploadForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-bold text-slate-900 mb-2">Sınıf Seviyesi <span className="text-rose-500">*</span></label>
-            <select required name="grade" disabled={status === "uploading"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all disabled:opacity-60">
+            <select 
+              required 
+              name="grade" 
+              value={selectedGrade}
+              onChange={(e) => setSelectedGrade(e.target.value as GradeLevel)}
+              disabled={status === "uploading"} 
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all disabled:opacity-60"
+            >
               <option value="">Seçiniz...</option>
               {Object.keys(GradeLevel).map(k => <option key={k} value={k}>{formatEnum(k)}</option>)}
             </select>
           </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-slate-900 mb-2">Ders Seçimi <span className="text-rose-500">*</span></label>
+            <select 
+              required 
+              name="subject" 
+              disabled={!selectedGrade || status === "uploading"} 
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all disabled:opacity-60"
+            >
+              <option value="">Seçiniz...</option>
+              {availableSubjects.map(sub => <option key={sub} value={sub}>{formatSubject(sub)}</option>)}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-bold text-slate-900 mb-2">Kategori <span className="text-rose-500">*</span></label>
             <select required name="category" disabled={status === "uploading"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all disabled:opacity-60">

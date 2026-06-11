@@ -1,7 +1,7 @@
 import { prisma } from "@/infrastructure/database/prisma";
 import { PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { FileStatus, GradeLevel, ContentCategory } from "@prisma/client";
+import { FileStatus, GradeLevel, ContentCategory, SubjectType } from "@prisma/client";
 import { s3Client } from "@/infrastructure/storage/r2";
 import crypto from "crypto";
 
@@ -10,6 +10,7 @@ interface InitializeUploadDTO {
     description?: string | null;
     authorName: string;
     grade: GradeLevel;
+    subject: SubjectType;
     category: ContentCategory;
     fileName: string;
     fileSize: number;
@@ -33,6 +34,7 @@ export class UploadService {
                 description: data.description,
                 authorName: data.authorName,
                 grade: data.grade,
+                subject: data.subject,
                 category: data.category,
                 originalName: data.fileName,
                 fileKey: safeFileKey,

@@ -22,7 +22,24 @@ enum GradeLevel {
   SINIF_4
   GENEL
 }
-
+enum SubjectType {
+  TUM_DERSLER
+  TURKCE
+  MATEMATIK
+  HAYAT_BILGISI
+  FEN_BILIMLERI
+  SOSYAL_BILGILER
+  INGILIZCE
+  DIN_KULTURU
+  GORSEL_SANATLAR
+  MUZIK
+  BEDEN_EGITIMI
+  BILISIM
+  SERBEST_ETKINLIK
+  REHBERLIK
+  DIL_VE_KONUSMA // Okul öncesi için
+  MOTOR_GELISIM    // Okul öncesi için
+}
 enum ContentCategory {
   ETKINLIK
   ODEV
@@ -64,6 +81,7 @@ model Material {
   status        FileStatus      @default(UPLOAD_PENDING)
   scanResult    String?         @db.Text                 // Virüs tarama logu/sonucu
   grade         GradeLevel
+  subject       SubjectType     @default(TUM_DERSLER)
   category      ContentCategory
   
   // Metrikler
@@ -78,7 +96,7 @@ model Material {
   updatedAt     DateTime        @updatedAt
 
   // Performans için Kompoze İndeksler (Sınıf ve kategori filtreleme hızını maksimize eder)
-  @@index([status, grade, category])
+  @@index([status, grade, subject, category])
   @@index([ipHash, createdAt]) // IP bazlı dakikalık yükleme limiti (Rate-limiting) kontrolü sorguları için
 }
 

@@ -5,6 +5,7 @@ import { updateMaterialStatus } from "@/app/admin/(protected)/materials/actions"
 import { Material, FileStatus } from "@prisma/client";
 import { CheckCircle2, XCircle, MoreVertical, Search, Filter, Trash2, Loader2, Download } from "lucide-react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { formatSubject } from "@/shared/constants/curriculum"; 
 
 interface MaterialTableProps {
   materials: Material[];
@@ -24,12 +25,10 @@ export default function MaterialTable({ materials: initialMaterials, totalCount 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  // Optimistic UI State (Sunucuyu beklemeden arayüzü anında güncellemek için)
   const [materials, setMaterials] = useState<Material[]>(initialMaterials);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
 
-  // Arama İşlemi (Debounced)
   const handleSearch = (term: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (term) params.set("q", term);
@@ -38,16 +37,11 @@ export default function MaterialTable({ materials: initialMaterials, totalCount 
     router.replace(`${pathname}?${params.toString()}`);
   };
 
-  // Tekil Durum Güncelleme (Approve / Reject)
   const handleStatusChange = async (id: string, newStatus: FileStatus) => {
-    // 1. Optimistic Update (Arayüzü anında değiştir)
     setMaterials(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
-    
-    // 2. Arka plan işlemi (Server Action)
     startTransition(async () => {
       const res = await updateMaterialStatus(id, newStatus);
       if (!res.success) {
-        // Hata olursa eski haline döndür
         setMaterials(initialMaterials);
         alert(res.error);
       }
@@ -68,8 +62,6 @@ export default function MaterialTable({ materials: initialMaterials, totalCount 
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-      
-      {/* Tablo Araç Çubuğu (Toolbar) */}
       <div className="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between gap-4 items-center bg-slate-50/50">
         <div className="relative w-full sm:w-80">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -81,7 +73,6 @@ export default function MaterialTable({ materials: initialMaterials, totalCount 
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 outline-none"
           />
         </div>
-
         <div className="flex items-center gap-3 w-full sm:w-auto">
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2 mr-2 animate-in fade-in slide-in-from-right-4">
@@ -103,7 +94,6 @@ export default function MaterialTable({ materials: initialMaterials, totalCount 
         </div>
       </div>
 
-      {/* Veri Tablosu */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -133,7 +123,7 @@ export default function MaterialTable({ materials: initialMaterials, totalCount 
                 <td className="p-4">
                   <div className="flex flex-col">
                     <span className="font-medium text-slate-700 text-sm">{item.grade.replace("_", " ")}</span>
-                    <span className="text-xs text-slate-500">{item.category.replace(/_/g, " ")}</span>
+                    <span className="text-xs text-slate-500">{item.category.replace(/_/g, " ")} • {formatSubject((item as any).subject)}</span> 
                   </div>
                 </td>
                 <td className="p-4">
