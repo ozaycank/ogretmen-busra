@@ -30,11 +30,11 @@ Platform, yüksek trafikli kullanım senaryolarına uygun olarak **Serverless mi
 
 |                                           Ana Sayfa                                            |                                              Materyal Detay                                              |
 | :--------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
-| <img src="https://via.placeholder.com/600x400.png?text=Ana+Sayfa+Goruntusu" alt="Ana Sayfa" /> | <img src="https://via.placeholder.com/600x400.png?text=Materyal+Detay+Goruntusu" alt="Materyal Detay" /> |
+| <img src="./public/Anasyfa.png" alt="Ana Sayfa" /> | <img src="./public/MateryalDetay.png" alt="Materyal Detay" /> |
 
 |                                         Admin Dashboard                                          |                                    Editör Onay Kuyruğu                                     |
 | :----------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
-| <img src="https://via.placeholder.com/600x400.png?text=Admin+Dashboard" alt="Admin Dashboard" /> | <img src="https://via.placeholder.com/600x400.png?text=Onay+Kuyrugu" alt="Onay Kuyruğu" /> |
+| <img src="./public/AdminDashboard.png" alt="Admin Dashboard" /> | <img src="./public/OnayKuyruğu.png" alt="Onay Kuyruğu" /> |
 
 ---
 
