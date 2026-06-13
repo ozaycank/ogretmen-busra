@@ -28,12 +28,12 @@ Platform, yüksek trafikli kullanım senaryolarına uygun olarak **Serverless mi
 
 ## 📸 Ekran Görüntüleri
 
-|                                           Ana Sayfa                                            |                                              Materyal Detay                                              |
-| :--------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------: |
-| <img src="./public/Anasyfa.png" alt="Ana Sayfa" /> | <img src="./public/MateryalDetay.png" alt="Materyal Detay" /> |
+|                      Ana Sayfa                      |                        Materyal Detay                         |
+| :-------------------------------------------------: | :-----------------------------------------------------------: |
+| <img src="./public/Anasayfa.png" alt="Ana Sayfa" /> | <img src="./public/MateryalDetay.png" alt="Materyal Detay" /> |
 
-|                                         Admin Dashboard                                          |                                    Editör Onay Kuyruğu                                     |
-| :----------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
+|                         Admin Dashboard                         |                    Editör Onay Kuyruğu                    |
+| :-------------------------------------------------------------: | :-------------------------------------------------------: |
 | <img src="./public/AdminDashboard.png" alt="Admin Dashboard" /> | <img src="./public/OnayKuyruğu.png" alt="Onay Kuyruğu" /> |
 
 ---
