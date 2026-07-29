@@ -1,3 +1,4 @@
+<img width="1894" height="956" alt="Anasayfa1" src="https://github.com/user-attachments/assets/d46a06db-a23d-44ba-9d54-945c8227ae1a" />
 <div align="center">
   <img src="https://via.placeholder.com/150x150.png?text=Logo" alt="Öğretmen Büşra Logo" width="120" />
 
