@@ -6,13 +6,14 @@ import Image from "next/image";
 import { Search, Menu, X, ChevronDown, GraduationCap, FileText, Newspaper } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+// PHASE 7 SEO UPDATE: Sınıf objelerine SEO landing route'ları (slug) eklendi.
 const GRADE_LEVELS = [
-  { key: "OKUL_ONCESI", label: "Okul Öncesi" },
-  { key: "SINIF_1", label: "1. Sınıf" },
-  { key: "SINIF_2", label: "2. Sınıf" },
-  { key: "SINIF_3", label: "3. Sınıf" },
-  { key: "SINIF_4", label: "4. Sınıf" },
-  { key: "GENEL", label: "Genel" },
+  { key: "OKUL_ONCESI", label: "Okul Öncesi", slug: "okul-oncesi" },
+  { key: "SINIF_1", label: "1. Sınıf", slug: "1-sinif" },
+  { key: "SINIF_2", label: "2. Sınıf", slug: "2-sinif" },
+  { key: "SINIF_3", label: "3. Sınıf", slug: "3-sinif" },
+  { key: "SINIF_4", label: "4. Sınıf", slug: "4-sinif" },
+  { key: "GENEL", label: "Genel", slug: "genel-materyaller" },
 ];
 
 const SearchBar = ({ className = "" }: { className?: string }) => {
@@ -22,6 +23,7 @@ const SearchBar = ({ className = "" }: { className?: string }) => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
+    // Arama fonksiyonu korunuyor. Discovery URL yapısı bozulmadı.
     router.push(`/materyaller?search=${encodeURIComponent(searchQuery)}`);
   };
 
@@ -77,7 +79,8 @@ const ClassesDropdown = () => {
           {GRADE_LEVELS.map((grade) => (
             <Link
               key={grade.key}
-              href={`/materyaller?grade=${grade.key}`}
+              // PHASE 7 SEO UPDATE: Artık /materyaller?grade=X yerine /1-sinif gibi SEO landing adresine gidiyor
+              href={`/${grade.slug}`}
               role="menuitem"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#0284c7] transition-colors"
@@ -176,7 +179,8 @@ export default function Navbar() {
               {GRADE_LEVELS.map((grade) => (
                 <Link
                   key={grade.key}
-                  href={`/materyaller?grade=${grade.key}`}
+                  // PHASE 7 SEO UPDATE (Mobil Menü)
+                  href={`/${grade.slug}`}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
                 >
