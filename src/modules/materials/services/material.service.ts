@@ -36,6 +36,7 @@ export class MaterialService {
                 orderBy: { createdAt: "desc" },
                 select: {
                     id: true,
+                    slug: true,
                     title: true,
                     description: true,
                     fileType: true,
