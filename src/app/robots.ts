@@ -1,28 +1,34 @@
 import { MetadataRoute } from "next";
 
-export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ogretmenbusra.com";
+// FIX 2: Root metadataBase ile aynı fallback origin kullanıldı (www kaldırıldı)
+const getBaseUrl = () => process.env.NEXT_PUBLIC_APP_URL || "https://ogretmenbusra.com";
 
-    // Production ortamında (Vercel/Canlı) arama motorlarına tam yetki verilir.
-    // Development veya Staging (Test) ortamlarında ise indexleme kapatılır.
-    const isProduction = process.env.NODE_ENV === "production";
+export default function robots(): MetadataRoute.Robots {
+    const baseUrl = getBaseUrl();
 
     return {
         rules: {
             userAgent: "*",
-            // Sadece Production ortamında sayfalara izin ver, diğerlerinde her şeyi engelle
-            allow: isProduction ? ["/"] : [],
+            allow: [
+                "/",
+                "/materyal/*",
+                "/haberler/*",
+                "/1-sinif",
+                "/2-sinif",
+                "/3-sinif",
+                "/4-sinif",
+                "/okul-oncesi",
+                "/genel-materyaller"
+            ],
             disallow: [
-                "/admin",           // Admin panelini ve alt sayfalarını tamamen gizle
+                "/admin/",
                 "/admin/*",
-                "/api",             // API rotalarının arama sonuçlarında çıkmasını engelle
+                "/api/",
                 "/api/*",
-                "/_next/",          // Next.js iç dosya ve statik derlemelerini gizle
-                "/*.json$",         // Sızabilecek konfigürasyon veya data dosyalarını koru
+                "/_next/"
             ],
         },
+        // Sitemap URL root domain (non-www) fallback'ine bağlandı
         sitemap: `${baseUrl}/sitemap.xml`,
-        // Google botlarına sitemizin ana URL'ini direkt olarak ver
-        host: baseUrl,
     };
 }

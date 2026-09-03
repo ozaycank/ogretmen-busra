@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import crypto from "crypto";
 import { Redis } from "@upstash/redis";
 import { prisma } from "@/infrastructure/database/prisma";
-import { FileStatus } from "@prisma/client";
+import { GradeLevel, SubjectType, ContentCategory, FileStatus } from "@prisma/client";
 import { ChevronRight, Download, Eye, FileText, User, Calendar, FileArchive, FileImage } from "lucide-react";
 import MaterialCard from "@/modules/materials/components/MaterialCard";
 import SkeletonCard from "@/shared/ui/Skeleton";
@@ -191,8 +191,12 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           }>
-            <RelatedMaterials category={material.category} currentId={material.id} />
-          </Suspense>
+<RelatedMaterials 
+  currentId={material.id} 
+  grade={material.grade} 
+  subject={material.subject} 
+  category={material.category} 
+/>          </Suspense>
         </div>
       </div>
     </>
@@ -202,27 +206,107 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
 // -------------------------------------------------------------
 // İLGİLİ MATERYALLER BİLEŞENİ
 // -------------------------------------------------------------
-async function RelatedMaterials({ category, currentId }: { category: string, currentId: string }) {
-  const related = await prisma.material.findMany({
-    where: { 
+async function RelatedMaterials({ 
+  currentId, 
+  grade, 
+  subject, 
+  category 
+}: { 
+  currentId: string; 
+  grade: GradeLevel; 
+  subject: SubjectType; 
+  category: ContentCategory; 
+}) {
+  const MAX_RELATED_MATERIALS = 3;
+  const excludedIds = [currentId];
+  
+  // TypeScript tip güvenliğini sağlamak için açıkça tip tanımlıyoruz (any kullanmıyoruz)
+  type MaterialCardPayload = {
+    id: string; slug: string; title: string; description: string | null;
+    fileType: string; authorName: string; grade: GradeLevel;
+    subject: SubjectType; category: ContentCategory; viewCount: number; downloadCount: number;
+  };
+  
+  const results: MaterialCardPayload[] = [];
+
+  const selectContract = {
+    id: true,
+    slug: true,
+    title: true,
+    description: true,
+    fileType: true,
+    authorName: true,
+    grade: true,
+    subject: true,
+    category: true,
+    viewCount: true,
+    downloadCount: true,
+  };
+
+  // TIER 1: Exact Match (Sınıf + Ders + Kategori)
+  const tier1 = await prisma.material.findMany({
+    where: {
       status: FileStatus.APPROVED,
-      category: category as any,
-      id: { not: currentId }
+      grade,
+      subject,
+      category,
+      id: { notIn: excludedIds },
     },
     orderBy: { downloadCount: "desc" },
-    take: 3,
+    take: MAX_RELATED_MATERIALS,
+    select: selectContract,
   });
 
-  if (related.length === 0) {
-    return <p className="text-slate-500">Bu kategoride henüz başka bir materyal bulunmuyor.</p>;
+  results.push(...(tier1 as MaterialCardPayload[]));
+  excludedIds.push(...tier1.map((m) => m.id));
+
+  // TIER 2: Sınıf + Ders Match (Tier 1 yetersizse)
+  if (results.length < MAX_RELATED_MATERIALS) {
+    const tier2 = await prisma.material.findMany({
+      where: {
+        status: FileStatus.APPROVED,
+        grade,
+        subject,
+        id: { notIn: excludedIds },
+      },
+      orderBy: { downloadCount: "desc" },
+      take: MAX_RELATED_MATERIALS - results.length,
+      select: selectContract,
+    });
+
+    results.push(...(tier2 as MaterialCardPayload[]));
+    excludedIds.push(...tier2.map((m) => m.id));
+  }
+
+  // TIER 3: Sadece Sınıf Fallback (Tier 1 + 2 yetersizse)
+  if (results.length < MAX_RELATED_MATERIALS) {
+    const tier3 = await prisma.material.findMany({
+      where: {
+        status: FileStatus.APPROVED,
+        grade,
+        id: { notIn: excludedIds },
+      },
+      orderBy: { downloadCount: "desc" },
+      take: MAX_RELATED_MATERIALS - results.length,
+      select: selectContract,
+    });
+
+    results.push(...(tier3 as MaterialCardPayload[]));
+  }
+
+  // EMPTY STATE: Eğer hiç kayıt yoksa section'ı tamamen gizle
+  if (results.length === 0) {
+    return null;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* material.slug'ın DB'de NOT NULL olduğu kesinleştiği için TypeScript'e 'as string' ile güvence veriyoruz */}
-      {related.map((item) => (
-        <MaterialCard key={item.id} material={{...item, slug: item.slug as string}} />
-      ))}
+    <div className="space-y-6 pt-8">
+      <h2 className="text-2xl font-black text-slate-900">Bunlar da ilginizi çekebilir</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {results.map((item) => (
+          <MaterialCard key={item.id} material={item} />
+        ))}
+      </div>
     </div>
   );
 }
