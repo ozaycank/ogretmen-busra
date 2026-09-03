@@ -37,7 +37,7 @@ export default function NewsCard({ news, featured = false }: { news: News, featu
           {news.content}
         </p>
 
-        <Link href={`/haberler/${news.id}`} className="inline-flex items-center gap-2 text-sm font-bold text-sky-500 hover:text-sky-700 mt-auto w-fit">
+        <Link href={`/haberler/${news.slug}`} className="inline-flex items-center gap-2 text-sm font-bold text-sky-500 hover:text-sky-700 mt-auto w-fit">
           Haberi Oku <ArrowRight size={16} />
         </Link>
       </div>

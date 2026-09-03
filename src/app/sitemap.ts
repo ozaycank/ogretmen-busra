@@ -4,7 +4,6 @@ import { prisma } from "@/infrastructure/database/prisma";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ogretmenbusra.com";
 
-    // 1. Statik Sayfalar (Öncelik sırasına göre)
     const staticRoutes: MetadataRoute.Sitemap = [
         { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
         { url: `${baseUrl}/materyaller`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
@@ -20,29 +19,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${baseUrl}/telif`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
     ];
 
-    // 2. Dinamik Verileri Çekme (Performans için Promise.all ile paralel istek)
     const [materials, news, authors] = await Promise.all([
         prisma.material.findMany({
-            where: { status: "APPROVED" }, // Sadece onaylı materyaller
-            select: { id: true, updatedAt: true },
+            where: { status: "APPROVED" },
+            select: { slug: true, updatedAt: true }, // slug EKLENDI
             orderBy: { updatedAt: "desc" }
         }),
         prisma.news.findMany({
-            where: { status: "PUBLISHED" }, // Sadece yayınlanmış haberler
-            select: { slug: true, updatedAt: true }, // SEO için slug kullanımı
+            where: { status: "PUBLISHED" },
+            select: { slug: true, updatedAt: true },
             orderBy: { updatedAt: "desc" }
         }),
         prisma.material.findMany({
             where: { status: "APPROVED" },
             select: { authorName: true, updatedAt: true },
-            distinct: ["authorName"], // Her yazar için tek bir sayfa oluşturmak adına
+            distinct: ["authorName"],
             orderBy: { updatedAt: "desc" }
         })
     ]);
 
-    // 3. Dinamik Rotaları Sitemap Formatına Çevirme
     const materialRoutes: MetadataRoute.Sitemap = materials.map((material) => ({
-        url: `${baseUrl}/materyal/${material.id}`,
+        url: `${baseUrl}/materyal/${material.slug}`,
         lastModified: material.updatedAt,
         changeFrequency: "weekly",
         priority: 0.8,
@@ -56,13 +53,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     const authorRoutes: MetadataRoute.Sitemap = authors.map((author) => ({
-        // Yazar isimlerinde boşluk/Türkçe karakter olabileceği için URL Encoding yapıyoruz
         url: `${baseUrl}/yazar/${encodeURIComponent(author.authorName)}`,
         lastModified: author.updatedAt,
         changeFrequency: "weekly",
         priority: 0.6,
     }));
 
-    // Tüm rotaları birleştirip döndür
     return [...staticRoutes, ...materialRoutes, ...newsRoutes, ...authorRoutes];
 }

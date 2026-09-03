@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -16,20 +16,32 @@ import ShareButton from "@/shared/ui/ShareButton";
 // Initialize Upstash Redis instance
 const redis = Redis.fromEnv();
 
+// ZORUNLU EKLENTİ: UUID Tespit Regex'i
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // 1. Dinamik SEO (OpenGraph) Metadata Üretimi
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
-  const material = await prisma.material.findUnique({ where: { id, status: FileStatus.APPROVED } });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug: identifier } = await params;
+  const isId = UUID_REGEX.test(identifier);
+
+  // findFirst kullanarak Prisma Schema cache/typescript uyumsuzluklarını önlüyoruz
+  const material = await prisma.material.findFirst({ 
+    where: isId ? { id: identifier, status: FileStatus.APPROVED } : { slug: identifier, status: FileStatus.APPROVED } 
+  });
 
   if (!material) return { title: "Materyal Bulunamadı" };
 
   return {
     title: `${material.title} | Büşra Öğretmen`,
     description: material.description || `${material.grade} seviyesi için ${material.category} materyali.`,
+    alternates: {
+      canonical: `/materyal/${material.slug}`, // Canonical URL her zaman slug olmalıdır
+    },
     openGraph: {
       title: material.title,
       description: material.description || "Eğitim materyalini indirmek için tıklayın.",
       type: "article",
+      url: `/materyal/${material.slug}`,
       authors: [material.authorName],
     },
   };
@@ -46,15 +58,21 @@ const getFileIcon = (type: string) => {
   }
 };
 
-export default async function MaterialDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function MaterialDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug: identifier } = await params;
+  const isId = UUID_REGEX.test(identifier);
 
-  // Ana veriyi çek
-  const material = await prisma.material.findUnique({
-    where: { id, status: FileStatus.APPROVED },
+  // Ana veriyi çek - findFirst ile TypeScript TS2322 hatası önlenir
+  const material = await prisma.material.findFirst({
+    where: isId ? { id: identifier, status: FileStatus.APPROVED } : { slug: identifier, status: FileStatus.APPROVED },
   });
 
   if (!material) notFound();
+
+  // MIGRATION YÖNLENDİRMESİ: Eğer UUID ile gelindiyse, yeni Slug URL'ye 308 Kalıcı olarak yönlendir
+  if (isId && material.slug) {
+    permanentRedirect(`/materyal/${material.slug}`);
+  }
 
   // Arka planda güvenli ve rate-limit korumalı görüntülenme sayısını artır
   try {
@@ -62,14 +80,14 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
     const ip = headerList.get("x-forwarded-for") || "127.0.0.1";
     // KVKK/GDPR uyumluluğu için IP adresini hashliyoruz
     const ipHash = crypto.createHash("sha256").update(ip).digest("hex");
-    const viewKey = `view:material:${id}:${ipHash}`;
+    const viewKey = `view:material:${material.id}:${ipHash}`;
 
     // Redis üzerinde 1 saatlik (3600 sn) kilit oluştur (Sadece ilk istekte başarılı olur)
     const isNewView = await redis.set(viewKey, "1", { ex: 3600, nx: true });
 
     if (isNewView) {
       prisma.material.update({
-        where: { id },
+        where: { id: material.id },
         data: { viewCount: { increment: 1 } }
       }).catch((e) => console.error("[DB_ERROR] Görüntülenme artırılamadı:", e));
     }
@@ -201,8 +219,9 @@ async function RelatedMaterials({ category, currentId }: { category: string, cur
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* material.slug'ın DB'de NOT NULL olduğu kesinleştiği için TypeScript'e 'as string' ile güvence veriyoruz */}
       {related.map((item) => (
-        <MaterialCard key={item.id} material={item} />
+        <MaterialCard key={item.id} material={{...item, slug: item.slug as string}} />
       ))}
     </div>
   );

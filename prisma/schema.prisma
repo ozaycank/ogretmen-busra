@@ -67,7 +67,7 @@ enum PostStatus {
 model Material {
   id            String          @id @default(uuid())
   title         String          @db.VarChar(150) // DB şişirme saldırılarına karşı katı sınır
-  slug          String?         @db.VarChar(255)
+  slug          String          @unique @db.VarChar(255)
   description   String?         @db.VarChar(500)
   
   fileKey       String          @unique @db.VarChar(255) // R2'deki gerçek dosya adı (UUID)

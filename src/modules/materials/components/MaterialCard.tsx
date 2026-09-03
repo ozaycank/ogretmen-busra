@@ -6,8 +6,10 @@ import { FileText, Download, Eye, FileArchive, FileImage, Heart, BookOpen } from
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import { formatSubject } from "@/shared/constants/curriculum";
 
-interface MaterialProps {
+// TİP DÜZELTMESİ: slug eklendi, enum tipleri string olarak bırakıldı (use client uyumluluğu için)
+export interface MaterialProps {
   id: string;
+  slug: string; // EKLENDİ
   title: string;
   description: string | null;
   fileType: string;
@@ -55,7 +57,8 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
           <Heart size={20} className={isFav ? "fill-rose-500" : ""} />
         </button>
 
-        <Link href={`/materyal/${material.id}`} className="absolute inset-0 z-10" aria-label={material.title} />
+        {/* SEO YÖNLENDİRMESİ DÜZELTİLDİ: material.id yerine material.slug kullanıldı */}
+        <Link href={`/materyal/${material.slug}`} className="absolute inset-0 z-10" aria-label={material.title} />
         
         <div className="flex flex-wrap gap-2 mb-4 pr-10">
           <span className="bg-sky-50 text-[#0284c7] px-3 py-1 text-xs font-bold rounded-full">
