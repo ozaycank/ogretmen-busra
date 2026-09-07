@@ -13,7 +13,7 @@ import SkeletonCard from "@/shared/ui/Skeleton";
 import MaterialPreview from "@/modules/materials/components/MaterialPreview";
 import ShareButton from "@/shared/ui/ShareButton"; 
 import { formatSubject } from "@/shared/constants/curriculum";
-
+import DownloadAnalyticsButton from "@/modules/materials/components/DownloadAnalyticsButton";
 // Phase 4 & 6: Single Source of Truth
 import { GRADE_LANDING_CONFIG, SUBJECT_TO_SLUG_MAP, ValidGradeSlug } from "../../[gradeSlug]/page";
 
@@ -223,15 +223,14 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <a 
-                  href={`/api/download?id=${material.id}`}
-                  className="flex-1 flex justify-center items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
-                >
-                  <Download size={24} /> Dosyayı İndir
-                </a>
-                
-                <ShareButton title={material.title} />
-              </div>
+  <DownloadAnalyticsButton 
+    materialId={material.id}
+    materialSlug={material.slug ?? ""}
+    grade={material.grade}
+    subject={material.subject}
+  />
+  <ShareButton title={material.title} slug={material.slug ?? ""} />
+</div>
             </div>
           </div>
         </div>

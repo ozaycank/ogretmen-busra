@@ -1,8 +1,24 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sparkles, ArrowRight, Search } from "lucide-react";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export default function HeroSection() {
+  const [searchValue, setSearchValue] = useState("");
+  const router = useRouter();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchValue.trim()) return;
+
+    // GA4 Search Event: Kullanıcı anasayfada ne aradı?
+    sendGAEvent({ event: "search", search_term: searchValue });
+
+    router.push(`/materyaller?search=${encodeURIComponent(searchValue)}`);
+  };
+
   return (
     <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2.5rem] p-8 md:p-16 overflow-hidden shadow-2xl mt-4">
       <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 bg-rose-600 rounded-full blur-[120px] opacity-20 pointer-events-none" />
@@ -13,10 +29,12 @@ export default function HeroSection() {
           <Sparkles size={16} className="text-amber-400" />
           <span>Binlerce ücretsiz eğitim materyali</span>
         </div>
+        
+        {/* SEO H1 GÜNCELLEMESİ: Sadece "Eğitimi eğlenceli yapıyoruz" yerine Arama Niyetine hitap eden net bilgi. */}
         <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-6">
-          Eğitimi Eğlenceli <br />
+          İlkokul , Okul Öncesi ve Genel <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-rose-400">
-            Hale Getiriyoruz
+            Eğitim Materyalleri
           </span>
         </h1>
         <p className="text-lg text-slate-300 mb-10 max-w-xl">
@@ -24,13 +42,14 @@ export default function HeroSection() {
           Hemen aramaya başlayın veya kendi içeriklerinizi ekleyin.
         </p>
 
-        {/* Zero-JS Search Form */}
-        <form action="/materyaller" method="GET" className="relative max-w-xl flex items-center mb-8">
+        {/* Zero-JS (Action) form yapısı yerine client bazlı routing ve tracking */}
+        <form onSubmit={handleSearchSubmit} className="relative max-w-xl flex items-center mb-8">
           <Search className="absolute left-4 text-slate-400" size={20} />
           <input
             type="text"
-            name="search"
             required
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Ne aramıştınız? (Örn: 1. sınıf okuma yazma)"
             className="w-full pl-12 pr-32 py-4 rounded-full bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white/20 transition-all"
           />

@@ -2,14 +2,15 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FileText, Download, Eye, FileArchive, FileImage, Heart, BookOpen } from "lucide-react";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import { formatSubject } from "@/shared/constants/curriculum";
+import { sendGAEvent } from "@next/third-parties/google";
 
-// TİP DÜZELTMESİ: slug eklendi, enum tipleri string olarak bırakıldı (use client uyumluluğu için)
 export interface MaterialProps {
   id: string;
-  slug: string; // EKLENDİ
+  slug: string; 
   title: string;
   description: string | null;
   fileType: string;
@@ -40,6 +41,20 @@ const formatEnum = (text: string) => {
 export default function MaterialCard({ material }: { material: MaterialProps }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const isFav = isFavorite(material.id);
+  const router = useRouter();
+
+  // Linke tıklandığında GA4 Select Content olayı gönderilir.
+  const handleMaterialClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    sendGAEvent({ 
+      event: "select_content", 
+      content_type: "material", 
+      item_id: material.slug 
+    });
+    
+    router.push(`/materyal/${material.slug}`);
+  };
   
   return (
     <div className="group block h-full relative">
@@ -48,7 +63,7 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
         <button 
           onClick={(e) => {
             e.preventDefault(); 
-            e.stopPropagation(); 
+            e.stopPropagation(); // Kartın tıklanma olayını eziyoruz ki çakışmasın
             toggleFavorite(material.id);
           }}
           className={`absolute top-4 right-4 z-30 p-2 rounded-full backdrop-blur-sm shadow-sm transition-all hover:scale-110 active:scale-95 ${isFav ? "bg-rose-50 text-rose-500" : "bg-white/80 text-slate-400 hover:text-rose-400"}`}
@@ -57,8 +72,13 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
           <Heart size={20} className={isFav ? "fill-rose-500" : ""} />
         </button>
 
-        {/* SEO YÖNLENDİRMESİ DÜZELTİLDİ: material.id yerine material.slug kullanıldı */}
-        <Link href={`/materyal/${material.slug}`} className="absolute inset-0 z-10" aria-label={material.title} />
+        {/* Ana tıklama alanı analitik ile sarmalandı */}
+        <a 
+          href={`/materyal/${material.slug}`} 
+          onClick={handleMaterialClick} 
+          className="absolute inset-0 z-10" 
+          aria-label={material.title} 
+        />
         
         <div className="flex flex-wrap gap-2 mb-4 pr-10">
           <span className="bg-sky-50 text-[#0284c7] px-3 py-1 text-xs font-bold rounded-full">
@@ -90,6 +110,7 @@ export default function MaterialCard({ material }: { material: MaterialProps }) 
         <div className="border-t border-gray-50 pt-4 flex justify-between items-center mt-auto relative z-20">
           <Link 
             href={`/yazar/${encodeURIComponent(material.authorName)}`}
+            onClick={(e) => e.stopPropagation()} // Yazar tıklaması ayrı çalışsın
             className="flex items-center gap-2 group/author hover:opacity-80 transition-opacity"
           >
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#e11d48] to-[#0284c7] text-white flex items-center justify-center text-[10px] font-bold">

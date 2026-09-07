@@ -2,19 +2,20 @@
 
 import React, { useState } from "react";
 import { Share2, Check } from "lucide-react";
+import { sendGAEvent } from "@next/third-parties/google";
 
 interface ShareButtonProps {
   title: string;
+  slug?: string; // Ekledik: Takip için URL bağlamını bilelim
 }
 
-export default function ShareButton({ title }: ShareButtonProps) {
+export default function ShareButton({ title, slug = "unknown" }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
-    // Tarayıcıdaki mevcut sayfanın URL'sini al
     const url = window.location.href;
 
-    // 1. Mobil cihazlar için Native Share Menüsü (Eğer tarayıcı destekliyorsa)
+    // 1. Mobil cihazlar için Native Share
     if (navigator.share) {
       try {
         await navigator.share({
@@ -22,9 +23,12 @@ export default function ShareButton({ title }: ShareButtonProps) {
           text: `${title} - Bu harika eğitim materyaline göz at!`,
           url: url,
         });
-        return; // Başarılıysa fonksiyonu bitir
+        // Sadece başarılı share (iptal edilmezse) gönderilir
+        sendGAEvent({ event: "share", method: "native_share", content_type: "material", item_id: slug });
+        return; 
       } catch (error) {
-        console.log("Paylaşım menüsü kapatıldı veya bir hata oluştu.", error);
+        // İptal edilme durumunda log düşme, event yollama
+        console.log("Paylaşım iptal edildi.");
       }
     }
 
@@ -32,7 +36,8 @@ export default function ShareButton({ title }: ShareButtonProps) {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // 2 saniye sonra tiki eski haline getir
+      sendGAEvent({ event: "share", method: "copy_link", content_type: "material", item_id: slug });
+      setTimeout(() => setCopied(false), 2000); 
     } catch (err) {
       console.error("Link kopyalanamadı:", err);
       alert("Link kopyalanamadı.");

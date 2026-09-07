@@ -2,16 +2,13 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-// Bileşen importları
 import Navbar from "@/shared/layout/Navbar";
 import Footer from "@/shared/layout/Footer";
-
-// YENİ EKLENEN: Cookie Provider importu
 import { CookieProvider } from "@/shared/providers/CookieProvider";
+import AnalyticsWrapper from "@/shared/providers/AnalyticsWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// ÇÖZÜM: metadataBase ve dinamik title template eklendi
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://ogretmenbusra.com"),
   title: {
@@ -29,8 +26,9 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${inter.className} min-h-screen flex flex-col bg-slate-50 text-slate-900`}>
-        {/* Tüm uygulamayı CookieProvider ile sarmalıyoruz */}
         <CookieProvider>
+          {/* Sadece Analytics izni (cookie.analytics === true) verildiğinde GA4 scriptini basar */}
+          <AnalyticsWrapper />
           
           <Navbar />
           
@@ -39,7 +37,6 @@ export default function RootLayout({
           </main>
           
           <Footer />
-
         </CookieProvider>
       </body>
     </html>
