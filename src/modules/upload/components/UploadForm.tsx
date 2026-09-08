@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2, File, X } from "lucide-react";
 import { GradeLevel, ContentCategory } from "@prisma/client";
 import Script from "next/script";
@@ -33,6 +33,8 @@ export default function UploadForm() {
   const [errorMessage, setErrorMessage] = useState("");
   
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel | "">("");
+
+  const [formKey, setFormKey] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -98,6 +100,7 @@ export default function UploadForm() {
     if (!turnstileToken) {
         setErrorMessage("Lütfen robot olmadığınızı doğrulayın.");
         setStatus("error");
+        if (window.turnstile) window.turnstile.reset();
         return;
     }
 
@@ -154,13 +157,26 @@ export default function UploadForm() {
         xhr.send(file);
       });
 
+      // Yükleme başarılı
       setStatus("success");
-      if (window.turnstile) window.turnstile.reset();
+
     } catch (err: any) {
       setErrorMessage(err.message || "Yükleme sırasında bilinmeyen bir hata oluştu.");
       setStatus("error");
       if (window.turnstile) window.turnstile.reset();
     }
+  };
+
+  const handleResetForm = () => {
+    // Tüm state'leri başlangıca döndürüyoruz
+    setFile(null);
+    setStatus("idle");
+    setUploadProgress(0);
+    setSelectedGrade("");
+    setErrorMessage("");
+    // BUG ÇÖZÜMÜ: formKey değerini artırarak React'in formu ve içindeki Turnstile div'ini 
+    // tamamen yok edip SIFIRDAN çizmesini (Re-mount) sağlıyoruz. Bu sayede Turnstile takılmaz.
+    setFormKey(prev => prev + 1);
   };
 
   // Dinamik ders listesi
@@ -174,7 +190,10 @@ export default function UploadForm() {
         <p className="text-slate-600 max-w-md mb-8">
           Dosyanız güvenlik taramasından ve editör onayından geçtikten sonra sistemde yayınlanacaktır. Eğitime katkınız için teşekkür ederiz.
         </p>
-        <button onClick={() => { setFile(null); setStatus("idle"); setUploadProgress(0); setSelectedGrade(""); }} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
+        <button 
+          onClick={handleResetForm} 
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors"
+        >
           Yeni Materyal Ekle
         </button>
       </div>
@@ -184,7 +203,10 @@ export default function UploadForm() {
   return (
     <>
       <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-100 rounded-3xl p-6 md:p-10 shadow-sm space-y-8">
+      
+      {/* KEY KULLANIMI: Form tamamen yeniden mount edilir */}
+      <form key={formKey} onSubmit={handleSubmit} className="bg-white border border-slate-100 rounded-3xl p-6 md:p-10 shadow-sm space-y-8">
+        
         {status === "error" && (
           <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl flex items-start gap-3">
             <AlertCircle className="text-rose-500 mt-0.5" size={20} />
@@ -292,6 +314,7 @@ export default function UploadForm() {
           <textarea name="description" maxLength={500} rows={4} placeholder="Materyalin içeriği, nasıl kullanılacağı hakkında kısa bir bilgi verin..." disabled={status === "uploading"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all resize-none disabled:opacity-60" />
         </div>
 
+        {/* Turnstile div'i React key ile sarmalandığı için Form ile birlikte sıfırdan mount edilir */}
         <div className="cf-turnstile" data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} data-theme="light"></div>
 
         <button type="submit" disabled={!file || status === "uploading" || status === "validating"} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed">
