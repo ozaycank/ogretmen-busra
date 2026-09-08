@@ -5,11 +5,13 @@ import { submitContactForm, ActionState } from "@/app/(public)/iletisim/actions"
 import { Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import Script from "next/script";
 
-// TypeScript'e Cloudflare Turnstile eklentisini tanıtıyoruz
+// TypeScript Global Kapsamı diğer sayfa ile çakışmasın diye eksiksiz tanımlanıyor
 declare global {
   interface Window {
     turnstile?: {
-      reset: () => void;
+      render: (element: string | HTMLElement, options: any) => string;
+      reset: (widgetId?: string) => void;
+      remove: (widgetId: string) => void;
     };
   }
 }
@@ -22,20 +24,60 @@ const initialState: ActionState = {
 export default function ContactForm() {
   const [state, formAction, isPending] = useActionState(submitContactForm, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  
+  // Explicit Rendering için referanslar
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Turnstile Explicit Başlatma
+  useEffect(() => {
+    const initTurnstile = () => {
+      if (window.turnstile && turnstileContainerRef.current && !widgetIdRef.current) {
+        widgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
+          theme: "light",
+        });
+      }
+    };
+
+    if (window.turnstile) {
+      initTurnstile();
+    }
+
+    return () => {
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+    };
+  }, []); // Mount / Unmount olduğunda tetiklenir
+
 
   // Başarılı olursa formu temizle ve Turnstile'ı sıfırla
   useEffect(() => {
     if (state.success && formRef.current) {
       formRef.current.reset();
-      if (window.turnstile) {
-        window.turnstile.reset();
+      // widget id'ye özel reset
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.reset(widgetIdRef.current);
       }
     }
   }, [state.success]);
 
   return (
     <>
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+      <Script 
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" 
+        strategy="lazyOnload" 
+        onLoad={() => {
+          if (window.turnstile && turnstileContainerRef.current && !widgetIdRef.current) {
+            widgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
+              sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
+              theme: "light",
+            });
+          }
+        }}
+      />
 
       <form ref={formRef} action={formAction} className="bg-white border border-slate-100 rounded-[2rem] p-8 md:p-12 shadow-sm space-y-6">
         
@@ -96,7 +138,8 @@ export default function ContactForm() {
           {state.errors?.message && <p className="text-rose-500 text-xs mt-1 font-medium">{state.errors.message[0]}</p>}
         </div>
 
-        <div className="cf-turnstile" data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} data-theme="light"></div>
+        {/* DOM Ref: React form yaratıldığında Turnstile buraya manuel enjekte edilir */}
+        <div ref={turnstileContainerRef} className="w-full"></div>
 
         <button 
           type="submit" 

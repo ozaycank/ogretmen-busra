@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { UploadCloud, CheckCircle2, AlertCircle, Loader2, File, X } from "lucide-react";
 import { GradeLevel, ContentCategory } from "@prisma/client";
 import Script from "next/script";
@@ -9,7 +9,9 @@ import { CURRICULUM_MAP, formatSubject } from "@/shared/constants/curriculum";
 declare global {
   interface Window {
     turnstile?: {
-      reset: () => void;
+      render: (element: string | HTMLElement, options: any) => string;
+      reset: (widgetId?: string) => void;
+      remove: (widgetId: string) => void;
     };
   }
 }
@@ -31,12 +33,43 @@ export default function UploadForm() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [status, setStatus] = useState<"idle" | "validating" | "uploading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel | "">("");
-
   const [formKey, setFormKey] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // BUG ÇÖZÜMÜ İÇİN EKLENEN REFLER
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Cloudflare Turnstile'ı Manuel Başlatma ve Temizleme (Explicit Rendering)
+  useEffect(() => {
+    // Eğer success modundaysak formu göstermiyoruz, dolayısıyla turnstile yüklenmemeli
+    if (status === "success") return;
+
+    const initTurnstile = () => {
+      if (window.turnstile && turnstileContainerRef.current && !widgetIdRef.current) {
+        widgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
+          sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
+          theme: "light",
+        });
+      }
+    };
+
+    // Script zaten yüklüyse anında çalıştır, değilse yüklenmesini bekle
+    if (window.turnstile) {
+      initTurnstile();
+    }
+
+    // Cleanup: Form silindiğinde veya re-mount olduğunda widget'ı hafızadan güvenle temizle
+    return () => {
+      if (window.turnstile && widgetIdRef.current) {
+        window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+    };
+  }, [formKey, status]); // formKey veya status (success'ten geriye) değiştiğinde tetiklenir
+
 
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
@@ -100,7 +133,7 @@ export default function UploadForm() {
     if (!turnstileToken) {
         setErrorMessage("Lütfen robot olmadığınızı doğrulayın.");
         setStatus("error");
-        if (window.turnstile) window.turnstile.reset();
+        if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current);
         return;
     }
 
@@ -157,29 +190,23 @@ export default function UploadForm() {
         xhr.send(file);
       });
 
-      // Yükleme başarılı
       setStatus("success");
-
     } catch (err: any) {
       setErrorMessage(err.message || "Yükleme sırasında bilinmeyen bir hata oluştu.");
       setStatus("error");
-      if (window.turnstile) window.turnstile.reset();
+      if (window.turnstile && widgetIdRef.current) window.turnstile.reset(widgetIdRef.current);
     }
   };
 
   const handleResetForm = () => {
-    // Tüm state'leri başlangıca döndürüyoruz
     setFile(null);
     setStatus("idle");
     setUploadProgress(0);
     setSelectedGrade("");
     setErrorMessage("");
-    // BUG ÇÖZÜMÜ: formKey değerini artırarak React'in formu ve içindeki Turnstile div'ini 
-    // tamamen yok edip SIFIRDAN çizmesini (Re-mount) sağlıyoruz. Bu sayede Turnstile takılmaz.
-    setFormKey(prev => prev + 1);
+    setFormKey(prev => prev + 1); // Widget'ı baştan kurması için tetikleyici
   };
 
-  // Dinamik ders listesi
   const availableSubjects = selectedGrade ? CURRICULUM_MAP[selectedGrade] : [];
 
   if (status === "success") {
@@ -190,10 +217,7 @@ export default function UploadForm() {
         <p className="text-slate-600 max-w-md mb-8">
           Dosyanız güvenlik taramasından ve editör onayından geçtikten sonra sistemde yayınlanacaktır. Eğitime katkınız için teşekkür ederiz.
         </p>
-        <button 
-          onClick={handleResetForm} 
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors"
-        >
+        <button onClick={handleResetForm} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-xl transition-colors">
           Yeni Materyal Ekle
         </button>
       </div>
@@ -202,9 +226,20 @@ export default function UploadForm() {
 
   return (
     <>
-      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+      {/* Script sadece onload olduğunda bir kere render() çağıracak şekilde bağlandı */}
+      <Script 
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" 
+        strategy="lazyOnload" 
+        onLoad={() => {
+          if (window.turnstile && turnstileContainerRef.current && !widgetIdRef.current) {
+            widgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
+              sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
+              theme: "light",
+            });
+          }
+        }}
+      />
       
-      {/* KEY KULLANIMI: Form tamamen yeniden mount edilir */}
       <form key={formKey} onSubmit={handleSubmit} className="bg-white border border-slate-100 rounded-3xl p-6 md:p-10 shadow-sm space-y-8">
         
         {status === "error" && (
@@ -314,8 +349,8 @@ export default function UploadForm() {
           <textarea name="description" maxLength={500} rows={4} placeholder="Materyalin içeriği, nasıl kullanılacağı hakkında kısa bir bilgi verin..." disabled={status === "uploading"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-sky-500 outline-none transition-all resize-none disabled:opacity-60" />
         </div>
 
-        {/* Turnstile div'i React key ile sarmalandığı için Form ile birlikte sıfırdan mount edilir */}
-        <div className="cf-turnstile" data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} data-theme="light"></div>
+        {/* DOM Ref: React form yaratıldığında bu hedefi bulup widget'ı manuel olarak (explicit) içine atacak */}
+        <div ref={turnstileContainerRef} className="w-full"></div>
 
         <button type="submit" disabled={!file || status === "uploading" || status === "validating"} className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed">
           {status === "uploading" ? <><Loader2 className="animate-spin" size={20} /> Yükleniyor...</> : "Materyali Paylaş"}
