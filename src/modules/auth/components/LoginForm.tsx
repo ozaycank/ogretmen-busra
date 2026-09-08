@@ -8,7 +8,11 @@ import { ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 
 declare global {
   interface Window {
-    turnstile?: { reset: () => void; };
+    turnstile?: {
+      render: (element: string | HTMLElement, options: any) => string;
+      reset: (widgetId?: string) => void;
+      remove: (widgetId: string) => void;
+    };
   }
 }
 
