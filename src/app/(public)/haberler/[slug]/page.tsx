@@ -103,7 +103,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ slu
             <img src={news.imageUrl} alt={news.title} className="w-full h-full object-cover" />
           </figure>
         )}
-        <article className="prose prose-slate prose-lg max-w-none text-slate-700 leading-loose whitespace-pre-wrap">{news.content}</article>
+        <article 
+  className="prose prose-slate prose-lg max-w-none text-slate-700 leading-loose"
+  dangerouslySetInnerHTML={{ __html: news.content }} 
+/>
         
         {/* PAYLAŞIM BUTONLARI AYNI */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100 mt-12">

@@ -5,16 +5,25 @@ import { saveNews } from "@/app/admin/(protected)/news/actions";
 import { Save, Eye, LayoutTemplate, Settings, CheckCircle2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { News } from "@prisma/client";
+import dynamic from "next/dynamic";
+
+// Next.js (SSR) ortamında Editorün çökmesini engellemek için sadece client'ta yüklüyoruz.
+const ReactQuill = dynamic(() => import("react-quill"), { 
+  ssr: false, 
+  loading: () => <div className="min-h-[400px] w-full flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl">Editör Yükleniyor...</div> 
+});
+
+import "react-quill/dist/quill.snow.css"; // Editör Tema Dosyası
 
 const generateSlug = (text: string) => {
   return text.toLowerCase()
     .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-    .replace(/[^a-z0-9]+/g, '-') // Tüm boşlukları ve özel karakterleri tireye çevir
-    .replace(/^-+|-+$/g, ''); // Baş ve sondaki tireleri temizle
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 };
 
 interface NewsEditorProps {
-  initialData?: Partial<News> | null; // 🚀 DÜZELTME: 'any' kaldırıldı
+  initialData?: Partial<News> | null;
 }
 
 export default function NewsEditor({ initialData }: NewsEditorProps) {
@@ -38,14 +47,16 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
       if (field === "title" && !id && !initialData) {
-        updated.slug = generateSlug(value); // Başlık yazılırken slug'ı otomatik doldur
+        updated.slug = generateSlug(value);
       }
       return updated;
     });
   };
 
   const handleSave = useCallback(async (isAutoSave = false) => {
-    if (formData.title.length < 5 || formData.content.length < 20) return;
+    // Sadece <p><br></p> gibi boş HTML takıntılarını da eleyip gerçek uzunluğu kontrol edelim
+    const plainTextContent = formData.content.replace(/(<([^>]+)>)/gi, "").trim();
+    if (formData.title.length < 5 || plainTextContent.length < 10) return;
     
     setSaveStatus("saving");
     const res = await saveNews(id, formData as any);
@@ -66,6 +77,17 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
     return () => clearTimeout(timer);
   }, [formData, handleSave]);
 
+  // Editör ayarları (Bold, Italic, Link, Listeler vb.)
+  const editorModules = {
+    toolbar: [
+      [{ 'header': [2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
       <div className="lg:col-span-8 space-y-6">
@@ -82,7 +104,19 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
             <div className="space-y-5">
               <input type="text" value={formData.title} onChange={(e) => updateField("title", e.target.value)} placeholder="Haber Başlığı" className="w-full text-2xl font-black text-slate-900 border-none focus:ring-0 placeholder:text-slate-300 p-0" />
               <input type="text" value={formData.slug} onChange={(e) => updateField("slug", generateSlug(e.target.value))} placeholder="url-uzantisi-slug" className="w-full text-sm font-mono text-sky-600 bg-sky-50 p-2 rounded-lg border border-sky-100 focus:outline-none" />
-              <textarea value={formData.content} onChange={(e) => updateField("content", e.target.value)} placeholder="Haberin içeriğini yazmaya başlayın..." className="w-full min-h-[400px] text-slate-700 border-none focus:ring-0 placeholder:text-slate-300 p-0 resize-y" />
+              
+              {/* ZENGİN METİN EDİTÖRÜ (Rich Text) */}
+              <div className="bg-white min-h-[400px]">
+                <ReactQuill 
+                  theme="snow" 
+                  value={formData.content} 
+                  onChange={(val) => updateField("content", val)} 
+                  modules={editorModules}
+                  className="h-[350px] pb-12" // Alt barın görünmesi için padding
+                  placeholder="Haberin içeriğini yazmaya başlayın..."
+                />
+              </div>
+
             </div>
           ) : (
             <div className="space-y-5">
@@ -99,7 +133,7 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
                 <p className="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Google Arama Önizlemesi</p>
                 <div className="text-[20px] text-[#1a0dab] hover:underline cursor-pointer truncate">{formData.seoTitle || formData.title || "Başlık"}</div>
                 <div className="text-[14px] text-[#006621] truncate">ogretmenbusra.com/haberler/{formData.slug || "url"}</div>
-                <div className="text-[14px] text-[#545454] mt-1 line-clamp-2">{formData.seoDescription || formData.content.substring(0, 150) || "Açıklama girilmedi."}</div>
+                <div className="text-[14px] text-[#545454] mt-1 line-clamp-2">{formData.seoDescription || formData.content.replace(/(<([^>]+)>)/gi, "").substring(0, 150) || "Açıklama girilmedi."}</div>
               </div>
             </div>
           )}
@@ -107,6 +141,7 @@ export default function NewsEditor({ initialData }: NewsEditorProps) {
         </div>
       </div>
 
+      {/* Sağ Taraf (Yayın Durumu vs.) Mevcut ile Birebir Aynı */}
       <div className="lg:col-span-4 space-y-6">
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
           
