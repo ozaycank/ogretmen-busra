@@ -6,9 +6,9 @@ import { Save, Eye, LayoutTemplate, Settings, CheckCircle2, Loader2 } from "luci
 import { useRouter } from "next/navigation";
 import { News } from "@prisma/client";
 import dynamic from "next/dynamic";
-
+import "react-quill-new/dist/quill.snow.css";
 // Next.js (SSR) ortamında Editorün çökmesini engellemek için sadece client'ta yüklüyoruz.
-const ReactQuill = dynamic(() => import("react-quill"), { 
+const ReactQuill = dynamic(() => import("react-quill-new"), { 
   ssr: false, 
   loading: () => <div className="min-h-[400px] w-full flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl">Editör Yükleniyor...</div> 
 });
