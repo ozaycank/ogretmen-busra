@@ -2,9 +2,7 @@
 
 :root {
   --background: #f8fafc;
-  /* Tailwind slate-50 (Şık ve göz yormayan açık gri) */
   --foreground: #0f172a;
-  /* Tailwind slate-900 (Okunaklı koyu metin) */
 }
 
 @theme inline {
@@ -14,10 +12,384 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Karanlık mod zorlamasını sildik. Artık site her ortamda şık gri tonunda açılacak */
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ============================================================
+   HABER DETAY SAYFASI - RICH TEXT TYPOGRAPHY
+   ============================================================ */
+
+.news-content {
+  color: #334155;
+  font-size: 1.075rem;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Tailwind Preflight heading/list/paragraf varsayılanlarını
+ * sıfırladığı için haber alanında kendi tipografimizi tanımlıyoruz.
+ */
+
+.news-content h1,
+.news-content h2,
+.news-content h3,
+.news-content h4,
+.news-content h5,
+.news-content h6 {
+  color: #0f172a;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.news-content h1 {
+  margin-top: 2.75rem;
+  margin-bottom: 1.25rem;
+  font-size: 2rem;
+}
+
+.news-content h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1.1rem;
+  font-size: 1.65rem;
+}
+
+.news-content h3 {
+  margin-top: 2.1rem;
+  margin-bottom: 1rem;
+  font-size: 1.35rem;
+}
+
+.news-content h4 {
+  margin-top: 1.8rem;
+  margin-bottom: 0.85rem;
+  font-size: 1.2rem;
+}
+
+.news-content h5,
+.news-content h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.075rem;
+}
+
+.news-content p {
+  margin-top: 1.15rem;
+  margin-bottom: 1.15rem;
+}
+
+/*
+ * ReactQuill Enter ile oluşturduğu boş satırları genellikle:
+ *
+ * <p><br></p>
+ *
+ * şeklinde saklar.
+ * Paragraph margin + br line box sayesinde detay sayfasında
+ * artık bu boşluklar görünür.
+ */
+.news-content p>br:only-child {
+  display: block;
+  content: "";
+  min-height: 1rem;
+}
+
+.news-content strong,
+.news-content b {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.news-content em,
+.news-content i {
+  font-style: italic;
+}
+
+.news-content u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.news-content s,
+.news-content strike,
+.news-content del {
+  text-decoration: line-through;
+}
+
+.news-content blockquote {
+  margin-top: 1.75rem;
+  margin-bottom: 1.75rem;
+  padding: 1.1rem 1.35rem;
+  border-left: 4px solid #38bdf8;
+  border-radius: 0 0.75rem 0.75rem 0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 1.05em;
+  font-style: italic;
+}
+
+.news-content blockquote> :first-child {
+  margin-top: 0;
+}
+
+.news-content blockquote> :last-child {
+  margin-bottom: 0;
+}
+
+/* Listeler - Tailwind reset nedeniyle manuel geri getiriliyor */
+
+.news-content ul,
+.news-content ol {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  padding-left: 1.75rem;
+}
+
+.news-content ul {
+  list-style-type: disc;
+}
+
+.news-content ol {
+  list-style-type: decimal;
+}
+
+.news-content li {
+  margin-top: 0.45rem;
+  margin-bottom: 0.45rem;
+  padding-left: 0.25rem;
+}
+
+/*
+ * Quill 2 bazı listeleri:
+ *
+ * <ol>
+ *   <li data-list="bullet">
+ *
+ * biçiminde oluşturabilir.
+ */
+
+.news-content li[data-list="bullet"] {
+  list-style-type: disc;
+}
+
+.news-content li[data-list="ordered"] {
+  list-style-type: decimal;
+}
+
+/* Linkler */
+
+.news-content a {
+  color: #0284c7;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #bae6fd;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition:
+    color 150ms ease,
+    text-decoration-color 150ms ease;
+}
+
+.news-content a:hover {
+  color: #0369a1;
+  text-decoration-color: #0284c7;
+}
+
+/* Haber içerisindeki görseller */
+
+.news-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 2rem auto;
+  border-radius: 1rem;
+}
+
+/* Figure */
+
+.news-content figure {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.news-content figcaption {
+  margin-top: 0.65rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Ayırıcı */
+
+.news-content hr {
+  height: 1px;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  border: 0;
+  background: #e2e8f0;
+}
+
+/* Kod blokları */
+
+.news-content code {
+  border-radius: 0.375rem;
+  background: #f1f5f9;
+  padding: 0.15rem 0.35rem;
+  color: #be123c;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-size: 0.9em;
+}
+
+.news-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 1rem;
+  background: #0f172a;
+  padding: 1.25rem;
+  color: #e2e8f0;
+}
+
+.news-content pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Tablolar */
+
+.news-content table {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-collapse: collapse;
+}
+
+.news-content th,
+.news-content td {
+  min-width: 120px;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.news-content th {
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Quill Alignment */
+
+.news-content .ql-align-center {
+  text-align: center;
+}
+
+.news-content .ql-align-right {
+  text-align: right;
+}
+
+.news-content .ql-align-justify {
+  text-align: justify;
+}
+
+/* Quill Indentation */
+
+.news-content .ql-indent-1 {
+  margin-left: 2rem;
+}
+
+.news-content .ql-indent-2 {
+  margin-left: 4rem;
+}
+
+.news-content .ql-indent-3 {
+  margin-left: 6rem;
+}
+
+.news-content .ql-indent-4 {
+  margin-left: 8rem;
+}
+
+.news-content .ql-indent-5 {
+  margin-left: 10rem;
+}
+
+.news-content .ql-indent-6 {
+  margin-left: 12rem;
+}
+
+.news-content .ql-indent-7 {
+  margin-left: 14rem;
+}
+
+.news-content .ql-indent-8 {
+  margin-left: 16rem;
+}
+
+/*
+ * Quill liste UI için eklediği görünmez yardımcı span.
+ */
+.news-content .ql-ui {
+  display: none;
+}
+
+/* İlk/son element gereksiz dış boşluk bırakmasın */
+
+.news-content> :first-child {
+  margin-top: 0;
+}
+
+.news-content> :last-child {
+  margin-bottom: 0;
+}
+
+/* Mobil */
+
+@media (max-width: 640px) {
+  .news-content {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .news-content h1 {
+    font-size: 1.7rem;
+  }
+
+  .news-content h2 {
+    font-size: 1.45rem;
+  }
+
+  .news-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .news-content blockquote {
+    padding: 1rem;
+  }
+
+  .news-content .ql-indent-1,
+  .news-content .ql-indent-2,
+  .news-content .ql-indent-3,
+  .news-content .ql-indent-4,
+  .news-content .ql-indent-5,
+  .news-content .ql-indent-6,
+  .news-content .ql-indent-7,
+  .news-content .ql-indent-8 {
+    margin-left: 1rem;
+  }
 }
