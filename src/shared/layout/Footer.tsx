@@ -1,154 +1,234 @@
-import React from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Users, Calendar, Activity, Database } from "lucide-react";
+import { unstable_cache } from "next/cache";
+import { Activity, Calendar, Database, Users } from "lucide-react";
+
 import { AnalyticsService } from "@/modules/analytics/services/analytics.service";
 
-// Next.js Cache Revalidation: Bu bileşen en fazla 60 saniyede bir güncellenir.
-// Böylece yüksek trafikte Redis/DB sunucumuz çökmez.
-export const revalidate = 60; 
+const MIN_TOTAL_VISITS_TO_SHOW = 1000;
 
-// GÜVENİLİRLİK BARAJI: Toplam ziyaretçi sayısı bu rakamı geçmeden istatistikler gizli kalır.
-const MIN_TOTAL_VISITS_TO_SHOW = 1000; 
+const EMPTY_STATS = {
+  online: 0,
+  today: 0,
+  yesterday: 0,
+  total: 0,
+};
+
+const getCachedGlobalStats = unstable_cache(
+  async () => AnalyticsService.getGlobalStats(),
+  ["footer-global-stats"],
+  {
+    revalidate: 60,
+  },
+);
+
+const platformLinks = [
+  { href: "/hakkimizda", label: "Hakkımızda" },
+  { href: "/iletisim", label: "İletişim" },
+  { href: "/materyaller", label: "Tüm Materyaller" },
+  { href: "/haberler", label: "Eğitim Haberleri" },
+  { href: "/destek-verenler", label: "Destek Verenler" },
+  { href: "/sss", label: "S.S.S." },
+] as const;
+
+const legalLinks = [
+  { href: "/kullanim-kosullari", label: "Kullanım Koşulları" },
+  { href: "/gizlilik", label: "Gizlilik Politikası" },
+  { href: "/kvkk-aydinlatma-metni", label: "KVKK" },
+  { href: "/cerezler", label: "Çerez Tercihleri" },
+  { href: "/telif", label: "Telif Hakkı Uyarısı" },
+] as const;
+
+async function getFooterStats() {
+  try {
+    return await getCachedGlobalStats();
+  } catch (error) {
+    console.error("[FOOTER_STATS_ERROR] İstatistikler çekilemedi:", error);
+
+    return EMPTY_STATS;
+  }
+}
 
 export default async function Footer() {
-  // 1. FAIL-SAFE (Hata Koruması): Redis veya DB çökerse sitenin alt kısmı patlamasın diye try-catch kullanıyoruz.
-  let stats = { online: 0, today: 0, yesterday: 0, total: 0 };
-  try {
-    stats = await AnalyticsService.getGlobalStats();
-  } catch (error) {
-    // Hata durumunda sessizce yutulur, stats 0 kalır ve barajı geçemediği için UI'da görünmez.
-    console.error("[FOOTER_STATS_ERROR] İstatistikler çekilemedi:", error);
-  }
+  const stats = await getFooterStats();
 
-  // 2. KREDİBİLİTE KONTROLÜ: Sayılar düşükse bölümü DOM'a hiç ekleme
   const isStatsVisible = stats.total >= MIN_TOTAL_VISITS_TO_SHOW;
 
   return (
-    <footer className="bg-[#0f172a] text-gray-300 pt-12 pb-6 mt-auto border-t border-slate-800/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* GERÇEK ZAMANLI İSTATİSTİK SAYACI (Sadece baraj aşılırsa görünür) */}
+    <footer
+      className="mt-auto border-t border-slate-800/50 bg-[#0f172a] pt-12 pb-6 text-gray-300"
+      aria-label="Site alt bilgisi"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {isStatsVisible && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-[#1e293b] p-6 rounded-2xl border border-slate-800 mb-10 shadow-lg relative overflow-hidden">
-            
-            <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full blur-3xl" />
+          <section
+            aria-label="Site ziyaret istatistikleri"
+            className="relative mb-10 grid grid-cols-2 gap-4 overflow-hidden rounded-2xl border border-slate-800 bg-[#1e293b] p-6 shadow-lg md:grid-cols-4"
+          >
+            <div
+              className="absolute top-0 right-0 h-32 w-32 rounded-full bg-sky-500/5 blur-3xl"
+              aria-hidden="true"
+            />
 
-            <div className="flex items-center gap-3 justify-center md:justify-start border-r border-slate-800/50 last:border-0 relative z-10">
-              <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl relative">
-                <div className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full animate-ping" />
-                <Activity size={20} />
+            <div className="relative z-10 flex items-center justify-center gap-3 border-r border-slate-800/50 md:justify-start">
+              <div className="relative rounded-xl bg-emerald-500/10 p-3 text-emerald-400">
+                <span
+                  className="absolute top-1 right-1 h-2 w-2 animate-ping rounded-full bg-emerald-500 motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
+
+                <Activity size={20} aria-hidden="true" />
               </div>
+
               <div>
-                <p className="text-xl font-bold text-white tracking-tight">{stats.online.toLocaleString("tr-TR")}</p>
-                <p className="text-xs text-slate-400 font-medium">Çevrimiçi</p>
+                <p className="text-xl font-bold tracking-tight text-white">
+                  {stats.online.toLocaleString("tr-TR")}
+                </p>
+
+                <p className="text-xs font-medium text-slate-400">Çevrimiçi</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 justify-center md:justify-start md:border-r border-slate-800/50 last:border-0 relative z-10">
-              <div className="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
-                <Calendar size={20} />
+            <div className="relative z-10 flex items-center justify-center gap-3 md:justify-start md:border-r md:border-slate-800/50">
+              <div className="rounded-xl bg-amber-500/10 p-3 text-amber-400">
+                <Calendar size={20} aria-hidden="true" />
               </div>
+
               <div>
-                <p className="text-xl font-bold text-white tracking-tight">{stats.today.toLocaleString("tr-TR")}</p>
-                <p className="text-xs text-slate-400 font-medium">Bugün</p>
+                <p className="text-xl font-bold tracking-tight text-white">
+                  {stats.today.toLocaleString("tr-TR")}
+                </p>
+
+                <p className="text-xs font-medium text-slate-400">Bugün</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 justify-center md:justify-start border-r border-slate-800/50 last:border-0 relative z-10">
-              <div className="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
-                <Users size={20} />
+            <div className="relative z-10 flex items-center justify-center gap-3 border-r border-slate-800/50 md:justify-start">
+              <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
+                <Users size={20} aria-hidden="true" />
               </div>
+
               <div>
-                <p className="text-xl font-bold text-white tracking-tight">{stats.yesterday.toLocaleString("tr-TR")}</p>
-                <p className="text-xs text-slate-400 font-medium">Dün</p>
+                <p className="text-xl font-bold tracking-tight text-white">
+                  {stats.yesterday.toLocaleString("tr-TR")}
+                </p>
+
+                <p className="text-xs font-medium text-slate-400">Dün</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 justify-center md:justify-start last:border-0 relative z-10">
-              <div className="p-3 bg-sky-500/10 text-sky-400 rounded-xl">
-                <Database size={20} />
+            <div className="relative z-10 flex items-center justify-center gap-3 md:justify-start">
+              <div className="rounded-xl bg-sky-500/10 p-3 text-sky-400">
+                <Database size={20} aria-hidden="true" />
               </div>
+
               <div>
-                <p className="text-xl font-bold text-white tracking-tight">{stats.total.toLocaleString("tr-TR")}</p>
-                <p className="text-xs text-slate-400 font-medium">Toplam Ziyaret</p>
+                <p className="text-xl font-bold tracking-tight text-white">
+                  {stats.total.toLocaleString("tr-TR")}
+                </p>
+
+                <p className="text-xs font-medium text-slate-400">
+                  Toplam Ziyaret
+                </p>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Kurumsal Alan ve Linkler */}
-        <div className={`grid grid-cols-1 md:grid-cols-12 gap-8 ${isStatsVisible ? 'border-t border-slate-800/50 pt-10' : ''}`}>
-          
+        <div
+          className={`grid grid-cols-1 gap-8 md:grid-cols-12 ${
+            isStatsVisible ? "border-t border-slate-800/50 pt-10" : ""
+          }`}
+        >
           <div className="md:col-span-12 lg:col-span-6">
-            <div className="flex items-center gap-3 mb-3">
-              <img 
-                src="/ogretmenbusraicon.png" 
-                alt="Öğretmen Büşra Logo" 
-                className="w-10 h-10 object-cover" 
-                style={{ clipPath: "circle(48% at 50% 50%)" }}
+            <div className="mb-3 flex items-center gap-3">
+              <Image
+                src="/ogretmenbusraicon.png"
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-full object-cover"
+                aria-hidden="true"
               />
-              <p className="text-xl font-bold text-white tracking-wide">
+
+              <p className="text-xl font-bold tracking-wide text-white">
                 Büşra Öğretmen
               </p>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
-              Türkiye'nin dört bir yanındaki öğretmenler, öğrenciler ve veliler için ücretsiz, güvenilir ve nitelikli eğitim materyalleri deposu.
+
+            <p className="max-w-sm text-sm leading-relaxed text-slate-400">
+              Türkiye&apos;nin dört bir yanındaki öğretmenler, öğrenciler ve
+              veliler için ücretsiz, güvenilir ve nitelikli eğitim materyalleri
+              deposu.
             </p>
           </div>
-          
-          <div className="md:col-span-6 lg:col-span-3">
-            <h3 className="text-white font-bold mb-4 tracking-wide text-sm uppercase">Platform</h3>
-            <ul className="space-y-3 text-sm font-medium text-slate-400">
-              <li><Link href="/hakkimizda" className="hover:text-sky-400 transition-colors">Hakkımızda</Link></li>
-              <li><Link href="/iletisim" className="hover:text-sky-400 transition-colors">İletişim</Link></li>
-              <li><Link href="/materyaller" className="hover:text-sky-400 transition-colors">Tüm Materyaller</Link></li>
-              <li><Link href="/haberler" className="hover:text-sky-400 transition-colors">Eğitim Haberleri</Link></li>
-              <li><Link href="/sss" className="hover:text-sky-400 transition-colors">S.S.S.</Link></li>
-            </ul>
-          </div>
 
-          <div className="md:col-span-6 lg:col-span-3">
-            <h3 className="text-white font-bold mb-4 tracking-wide text-sm uppercase">Yasal</h3>
-            <ul className="space-y-3 text-sm font-medium text-slate-400">
-              <li><Link href="/kullanim-kosullari" className="hover:text-sky-400 transition-colors">Kullanım Koşulları</Link></li>
-              <li><Link href="/gizlilik" className="hover:text-sky-400 transition-colors">Gizlilik Politikası</Link></li>
-              <li><Link href="/kvkk-aydinlatma-metni" className="hover:text-sky-400 transition-colors">KVKK</Link></li>
-              <li><Link href="/cerezler" className="hover:text-sky-400 transition-colors">Çerez Tercihleri</Link></li>
-              <li><Link href="/telif" className="hover:text-sky-400 transition-colors">Telif Hakkı Uyarısı</Link></li>
-            </ul>
-          </div>
+          <nav
+            className="md:col-span-6 lg:col-span-3"
+            aria-label="Platform bağlantıları"
+          >
+            <h2 className="mb-4 text-sm font-bold tracking-wide text-white uppercase">
+              Platform
+            </h2>
 
+            <ul className="space-y-3 text-sm font-medium text-slate-400">
+              {platformLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="transition-colors hover:text-sky-400 focus-visible:text-sky-400 focus-visible:outline-none"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav
+            className="md:col-span-6 lg:col-span-3"
+            aria-label="Yasal bağlantılar"
+          >
+            <h2 className="mb-4 text-sm font-bold tracking-wide text-white uppercase">
+              Yasal
+            </h2>
+
+            <ul className="space-y-3 text-sm font-medium text-slate-400">
+              {legalLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="transition-colors hover:text-sky-400 focus-visible:text-sky-400 focus-visible:outline-none"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 mt-12 pt-6 border-t border-slate-800/50">
-          <p>&copy; {new Date().getFullYear()} ogretmenbusra.com. Tüm hakları saklıdır.</p>
-          
-          <div className="flex flex-col md:flex-row items-center gap-3 mt-4 md:mt-0 font-medium">
+        <div className="mt-12 flex flex-col items-center justify-between border-t border-slate-800/50 pt-6 text-xs text-slate-500 md:flex-row">
+          <p>
+            &copy; {new Date().getFullYear()} ogretmenbusra.com. Tüm hakları
+            saklıdır.
+          </p>
+
+          <div className="mt-4 flex flex-col items-center gap-3 font-medium md:mt-0 md:flex-row">
             <span>Developed with ❤️ for Education</span>
-            <span className="hidden md:block w-1 h-1 rounded-full bg-slate-700"></span>
-            <a 
-              href="https://github.com/ozaycank" 
-              target="_blank" 
+
+            <span
+              className="hidden h-1 w-1 rounded-full bg-slate-700 md:block"
+              aria-hidden="true"
+            />
+
+            <a
+              href="https://github.com/ozaycank"
+              target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-sky-400 transition-colors group"
+              className="group flex items-center gap-1.5 transition-colors hover:text-sky-400 focus-visible:text-sky-400 focus-visible:outline-none"
               title="Özay Can Kırlı - GitHub"
             >
-              {/* Lucide formatında yerleşik SVG GitHub İkonu */}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="14" 
-                height="14" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="group-hover:scale-110 transition-transform"
-              >
-                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
-                <path d="M9 18c-4.51 2-5-2-7-2"></path>
-              </svg>
               <span>Özay Can Kırlı</span>
             </a>
           </div>
