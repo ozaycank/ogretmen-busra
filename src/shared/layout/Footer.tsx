@@ -1,34 +1,33 @@
 import Image from "next/image";
 import Link from "next/link";
-import { unstable_cache } from "next/cache";
-import { Activity, Calendar, Database, Users } from "lucide-react";
 
-import { AnalyticsService } from "@/modules/analytics/services/analytics.service";
-
-const MIN_TOTAL_VISITS_TO_SHOW = 1000;
-
-const EMPTY_STATS = {
-  online: 0,
-  today: 0,
-  yesterday: 0,
-  total: 0,
-};
-
-const getCachedGlobalStats = unstable_cache(
-  async () => AnalyticsService.getGlobalStats(),
-  ["footer-global-stats"],
-  {
-    revalidate: 60,
-  },
-);
+import FooterStats from "@/shared/layout/FooterStats";
 
 const platformLinks = [
-  { href: "/hakkimizda", label: "Hakkımızda" },
-  { href: "/iletisim", label: "İletişim" },
-  { href: "/materyaller", label: "Tüm Materyaller" },
-  { href: "/haberler", label: "Eğitim Haberleri" },
-  { href: "/destek-verenler", label: "Destek Verenler" },
-  { href: "/sss", label: "S.S.S." },
+  {
+    href: "/hakkimizda",
+    label: "Hakkımızda",
+  },
+  {
+    href: "/iletisim",
+    label: "İletişim",
+  },
+  {
+    href: "/materyaller",
+    label: "Tüm Materyaller",
+  },
+  {
+    href: "/haberler",
+    label: "Eğitim Haberleri",
+  },
+  {
+    href: "/destek-verenler",
+    label: "Destek Verenler",
+  },
+  {
+    href: "/sss",
+    label: "S.S.S.",
+  },
 ] as const;
 
 const legalLinks = [
@@ -54,107 +53,16 @@ const legalLinks = [
   },
 ] as const;
 
-async function getFooterStats() {
-  try {
-    return await getCachedGlobalStats();
-  } catch (error) {
-    console.error("[FOOTER_STATS_ERROR] İstatistikler çekilemedi:", error);
-
-    return EMPTY_STATS;
-  }
-}
-
-export default async function Footer() {
-  const stats = await getFooterStats();
-
-  const isStatsVisible = stats.total >= MIN_TOTAL_VISITS_TO_SHOW;
-
+export default function Footer() {
   return (
     <footer
       className="mt-auto border-t border-slate-800/50 bg-[#0f172a] pt-12 pb-6 text-gray-300"
       aria-label="Site alt bilgisi"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {isStatsVisible && (
-          <section
-            aria-label="Site ziyaret istatistikleri"
-            className="relative mb-10 grid grid-cols-2 gap-4 overflow-hidden rounded-2xl border border-slate-800 bg-[#1e293b] p-6 shadow-lg md:grid-cols-4"
-          >
-            <div
-              className="absolute top-0 right-0 h-32 w-32 rounded-full bg-sky-500/5 blur-3xl"
-              aria-hidden="true"
-            />
+        <FooterStats />
 
-            <div className="relative z-10 flex items-center justify-center gap-3 border-r border-slate-800/50 md:justify-start">
-              <div className="relative rounded-xl bg-emerald-500/10 p-3 text-emerald-400">
-                <span
-                  className="absolute top-1 right-1 h-2 w-2 animate-ping rounded-full bg-emerald-500 motion-reduce:animate-none"
-                  aria-hidden="true"
-                />
-
-                <Activity size={20} aria-hidden="true" />
-              </div>
-
-              <div>
-                <p className="text-xl font-bold tracking-tight text-white">
-                  {stats.online.toLocaleString("tr-TR")}
-                </p>
-
-                <p className="text-xs font-medium text-slate-400">Çevrimiçi</p>
-              </div>
-            </div>
-
-            <div className="relative z-10 flex items-center justify-center gap-3 md:justify-start md:border-r md:border-slate-800/50">
-              <div className="rounded-xl bg-amber-500/10 p-3 text-amber-400">
-                <Calendar size={20} aria-hidden="true" />
-              </div>
-
-              <div>
-                <p className="text-xl font-bold tracking-tight text-white">
-                  {stats.today.toLocaleString("tr-TR")}
-                </p>
-
-                <p className="text-xs font-medium text-slate-400">Bugün</p>
-              </div>
-            </div>
-
-            <div className="relative z-10 flex items-center justify-center gap-3 border-r border-slate-800/50 md:justify-start">
-              <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
-                <Users size={20} aria-hidden="true" />
-              </div>
-
-              <div>
-                <p className="text-xl font-bold tracking-tight text-white">
-                  {stats.yesterday.toLocaleString("tr-TR")}
-                </p>
-
-                <p className="text-xs font-medium text-slate-400">Dün</p>
-              </div>
-            </div>
-
-            <div className="relative z-10 flex items-center justify-center gap-3 md:justify-start">
-              <div className="rounded-xl bg-sky-500/10 p-3 text-sky-400">
-                <Database size={20} aria-hidden="true" />
-              </div>
-
-              <div>
-                <p className="text-xl font-bold tracking-tight text-white">
-                  {stats.total.toLocaleString("tr-TR")}
-                </p>
-
-                <p className="text-xs font-medium text-slate-400">
-                  Toplam Ziyaret
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-
-        <div
-          className={`grid grid-cols-1 gap-8 md:grid-cols-12 ${
-            isStatsVisible ? "border-t border-slate-800/50 pt-10" : ""
-          }`}
-        >
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
           <div className="md:col-span-12 lg:col-span-6">
             <div className="mb-3 flex items-center gap-3">
               <Image
@@ -232,7 +140,7 @@ export default async function Footer() {
           </p>
 
           <div className="mt-4 flex flex-col items-center gap-3 font-medium md:mt-0 md:flex-row">
-            <span>Developed with ❤️ for Education</span>
+            <span>Eğitim için ❤️ ile geliştirildi. </span>
 
             <span
               className="hidden h-1 w-1 rounded-full bg-slate-700 md:block"

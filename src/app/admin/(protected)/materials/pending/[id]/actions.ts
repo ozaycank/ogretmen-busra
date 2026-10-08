@@ -1,51 +1,262 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import {
+    revalidatePath,
+    revalidateTag,
+} from "next/cache";
+
 import { redirect } from "next/navigation";
-import { prisma } from "@/infrastructure/database/prisma";
-import { FileStatus, AuditAction } from "@prisma/client";
 import { headers } from "next/headers";
-import { logger } from "@/infrastructure/logger";
+
+import {
+    AuditAction,
+    FileStatus,
+} from "@prisma/client";
+
 import { auth } from "@/auth";
 
-export async function moderateMaterial(materialId: string, action: "APPROVE" | "REJECT", reason?: string) {
+import { prisma } from "@/infrastructure/database/prisma";
+import { logger } from "@/infrastructure/logger";
+
+const MATERIALS_CACHE_TAG = "materials";
+
+export async function moderateMaterial(
+    materialId: string,
+    action:
+        | "APPROVE"
+        | "REJECT",
+    reason?: string,
+) {
     try {
-        const session = await auth();
-        // Sadece Admin ve Moderator yapabilir
-        if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "MODERATOR")) {
-            throw new Error("Yetkisiz işlem.");
+        /*
+         * -----------------------------------------------------
+         * AUTHORIZATION
+         * -----------------------------------------------------
+         */
+
+        const session =
+            await auth();
+
+        if (
+            !session?.user ||
+            (
+                session.user.role !==
+                "ADMIN" &&
+                session.user.role !==
+                "MODERATOR"
+            )
+        ) {
+            throw new Error(
+                "Yetkisiz işlem.",
+            );
         }
 
-        const headerList = await headers();
-        const ip = headerList.get("cf-connecting-ip") || headerList.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+        /*
+         * -----------------------------------------------------
+         * REQUEST IP
+         * -----------------------------------------------------
+         */
 
-        const newStatus = action === "APPROVE" ? FileStatus.APPROVED : FileStatus.REJECTED;
-        const auditAction = action === "APPROVE" ? AuditAction.MATERIAL_APPROVED : AuditAction.MATERIAL_REJECTED;
+        const headerList =
+            await headers();
 
-        const updated = await prisma.material.update({
-            where: { id: materialId },
-            data: {
-                status: newStatus,
-                scanResult: reason ? `Moderasyon Notu: ${reason}` : null
-            }
-        });
+        const ip =
+            headerList.get(
+                "cf-connecting-ip",
+            ) ||
+            headerList
+                .get(
+                    "x-forwarded-for",
+                )
+                ?.split(",")[0]
+                ?.trim() ||
+            "127.0.0.1";
+
+        /*
+         * -----------------------------------------------------
+         * STATUS / AUDIT ACTION
+         * -----------------------------------------------------
+         */
+
+        const newStatus =
+            action === "APPROVE"
+                ? FileStatus.APPROVED
+                : FileStatus.REJECTED;
+
+        const auditAction =
+            action === "APPROVE"
+                ? AuditAction.MATERIAL_APPROVED
+                : AuditAction.MATERIAL_REJECTED;
+
+        /*
+         * -----------------------------------------------------
+         * DATABASE UPDATE
+         * -----------------------------------------------------
+         */
+
+        const updated =
+            await prisma.material.update({
+                where: {
+                    id: materialId,
+                },
+
+                data: {
+                    status:
+                        newStatus,
+
+                    scanResult:
+                        reason
+                            ? `Moderasyon Notu: ${reason}`
+                            : null,
+                },
+            });
+
+        /*
+         * -----------------------------------------------------
+         * AUDIT LOG
+         * -----------------------------------------------------
+         */
 
         await prisma.auditLog.create({
             data: {
-                userId: session.user.id,
-                action: auditAction,
-                ipAddress: ip,
-                details: `Materyal ID: ${materialId} | İşlem: ${action} | Sebep: ${reason || "Belirtilmedi"} | R2 Key: ${updated.fileKey}`
-            }
+                userId:
+                    session.user.id,
+
+                action:
+                    auditAction,
+
+                ipAddress:
+                    ip,
+
+                details:
+                    `Materyal ID: ${materialId} | ` +
+                    `İşlem: ${action} | ` +
+                    `Sebep: ${reason || "Belirtilmedi"} | ` +
+                    `R2 Key: ${updated.fileKey}`,
+            },
         });
 
-        logger.info({ adminId: session.user.id, materialId, action }, "Moderasyon işlemi tamamlandı");
+        logger.info(
+            {
+                adminId:
+                    session.user.id,
 
+                materialId,
+
+                action,
+            },
+
+            "Moderasyon işlemi tamamlandı",
+        );
+
+        /*
+         * -----------------------------------------------------
+         * CACHE INVALIDATION
+         * -----------------------------------------------------
+         *
+         * unstable_cache içindeki "materials" tag'li
+         * public materyal sorgularını hemen expire ediyoruz.
+         *
+         * Böylece onaylanan materyal public tarafta eski
+         * cache süresinin dolmasını beklemez.
+         */
+
+        revalidateTag(
+            MATERIALS_CACHE_TAG,
+            {
+                expire: 0,
+            },
+        );
+
+        /*
+         * Admin ekranları
+         */
+
+        revalidatePath(
+            "/admin/materials",
+        );
+
+        revalidatePath(
+            "/admin/dashboard",
+        );
+
+        /*
+         * Public ana sayfa
+         */
+
+        revalidatePath("/");
+
+        /*
+         * Ana materyal listeleme
+         */
+
+        revalidatePath(
+            "/materyaller",
+        );
+
+        /*
+         * Genel materyaller
+         */
+
+        revalidatePath(
+            "/genel-materyaller",
+        );
+
+        /*
+         * Değişen materyalin kendi detail sayfası.
+         *
+         * APPROVED:
+         * yeni public sayfa oluşturulabilir.
+         *
+         * REJECTED:
+         * eski cached detail çıktısının temizlenmesini sağlar.
+         */
+
+        if (updated.slug) {
+            revalidatePath(
+                `/materyal/${updated.slug}`,
+            );
+        }
+
+        /*
+         * Sınıf landing sayfaları
+         */
+
+        revalidatePath(
+            "/[gradeSlug]",
+            "page",
+        );
+
+        /*
+         * Sınıf + ders landing sayfaları
+         */
+
+        revalidatePath(
+            "/[gradeSlug]/[subjectSlug]",
+            "page",
+        );
     } catch (error) {
-        logger.error({ err: error, materialId }, "Moderasyon başarısız");
-        throw new Error("İşlem gerçekleştirilemedi.");
+        logger.error(
+            {
+                err: error,
+                materialId,
+            },
+
+            "Moderasyon başarısız",
+        );
+
+        throw new Error(
+            "İşlem gerçekleştirilemedi.",
+        );
     }
 
-    revalidatePath("/admin/materials");
-    redirect("/admin/materials");
+    /*
+     * redirect try/catch dışında kalmalı.
+     *
+     * Next.js redirect() özel bir control-flow exception
+     * kullandığı için catch içine alınması doğru değildir.
+     */
+    redirect(
+        "/admin/materials",
+    );
 }
