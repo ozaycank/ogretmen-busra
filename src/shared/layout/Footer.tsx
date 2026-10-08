@@ -32,11 +32,26 @@ const platformLinks = [
 ] as const;
 
 const legalLinks = [
-  { href: "/kullanim-kosullari", label: "Kullanım Koşulları" },
-  { href: "/gizlilik", label: "Gizlilik Politikası" },
-  { href: "/kvkk-aydinlatma-metni", label: "KVKK" },
-  { href: "/cerezler", label: "Çerez Tercihleri" },
-  { href: "/telif", label: "Telif Hakkı Uyarısı" },
+  {
+    href: "/kullanim-kosullari",
+    label: "Kullanım Koşulları",
+  },
+  {
+    href: "/gizlilik",
+    label: "Gizlilik Politikası",
+  },
+  {
+    href: "/kvkk-aydinlatma-metni",
+    label: "KVKK",
+  },
+  {
+    href: "/cerezler",
+    label: "Çerez Tercihleri",
+  },
+  {
+    href: "/telif",
+    label: "Telif Hakkı Uyarısı",
+  },
 ] as const;
 
 async function getFooterStats() {
@@ -176,6 +191,7 @@ export default async function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={false}
                     className="transition-colors hover:text-sky-400 focus-visible:text-sky-400 focus-visible:outline-none"
                   >
                     {link.label}
@@ -198,6 +214,7 @@ export default async function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={false}
                     className="transition-colors hover:text-sky-400 focus-visible:text-sky-400 focus-visible:outline-none"
                   >
                     {link.label}
