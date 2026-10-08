@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+
 import {
   FileText,
   FileArchive,
@@ -13,6 +14,7 @@ import {
 
 const PdfPreviewClient = dynamic(() => import("./PdfPreviewClient"), {
   ssr: false,
+
   loading: () => (
     <div className="relative flex aspect-[1/1.4] w-full items-center justify-center overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm">
       <div className="flex flex-col items-center justify-center text-slate-400">
@@ -53,6 +55,7 @@ export default function MaterialPreview({
   title,
 }: MaterialPreviewProps) {
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(false);
 
   const type = fileType.toLowerCase();
@@ -83,10 +86,6 @@ export default function MaterialPreview({
     </div>
   );
 
-  // --------------------------------------------------
-  // GÖRSEL ÖNİZLEME
-  // --------------------------------------------------
-
   if (isImage) {
     return (
       <div className="group relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-inner md:aspect-square">
@@ -106,9 +105,7 @@ export default function MaterialPreview({
             className={`object-cover transition-all duration-500 group-hover:scale-105 ${
               loading ? "opacity-0" : "opacity-100"
             }`}
-            onLoad={() => {
-              setLoading(false);
-            }}
+            onLoad={() => setLoading(false)}
             onError={() => {
               setLoading(false);
               setError(true);
@@ -120,17 +117,9 @@ export default function MaterialPreview({
     );
   }
 
-  // --------------------------------------------------
-  // PDF ÖNİZLEME
-  // --------------------------------------------------
-
   if (isPdf) {
     return <PdfPreviewClient fileUrl={safeFileUrl} title={title} />;
   }
-
-  // --------------------------------------------------
-  // DİĞER DOSYALAR
-  // --------------------------------------------------
 
   return (
     <div className="relative flex aspect-[3/4] w-full flex-col items-center justify-center rounded-3xl border border-slate-200 bg-slate-50 p-6 text-center shadow-inner md:aspect-square">

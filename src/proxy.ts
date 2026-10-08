@@ -62,7 +62,7 @@ export default auth(async (req) => {
     }
 
     // --------------------------------------------------
-    // ADMIN AUTHORIZATION
+    // ADMIN YETKİ KONTROLÜ
     // --------------------------------------------------
 
     const isLoggedIn = !!req.auth?.user;
@@ -81,8 +81,8 @@ export default auth(async (req) => {
         return NextResponse.next();
     }
 
-    // API route'ları mevcut davranışını korur.
-    // Admin olmayan route'larda yönlendirme yapılmaz.
+    // API route'ları burada auth yönlendirmesi almadan devam eder.
+    // POST rate limit yukarıda uygulanmıştır.
     if (!isAdminRoute) {
         return NextResponse.next();
     }
@@ -94,7 +94,9 @@ export default auth(async (req) => {
     }
 
     if (role !== "ADMIN" && role !== "MODERATOR") {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(
+            new URL("/", req.url),
+        );
     }
 
     if (
@@ -110,5 +112,8 @@ export default auth(async (req) => {
 });
 
 export const config = {
-    matcher: ["/admin/:path*", "/api/:path*"],
+    matcher: [
+        "/admin/:path*",
+        "/api/:path*",
+    ],
 };

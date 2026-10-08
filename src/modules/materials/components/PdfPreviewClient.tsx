@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { Document, Page, pdfjs } from "react-pdf";
+
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -22,6 +24,7 @@ export default function PdfPreviewClient({
   title,
 }: PdfPreviewClientProps) {
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(false);
 
   return (
